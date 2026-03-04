@@ -1,0 +1,106 @@
+[
+    {
+        "id": "all",
+        "name": "All",
+        "icon": "Grid3X3",
+        "color": "#FF3B3B",
+        "description": "Everything on Videx",
+        "count": 26
+    },
+    {
+        "id": "technology",
+        "name": "Technology",
+        "icon": "Cpu",
+        "color": "#00D4FF",
+        "description": "Tech, coding, AI, gadgets",
+        "count": 6
+    },
+    {
+        "id": "travel",
+        "name": "Travel",
+        "icon": "Globe",
+        "color": "#00C49A",
+        "description": "Destinations, vlogs, adventures",
+        "count": 4
+    },
+    {
+        "id": "food",
+        "name": "Food",
+        "icon": "ChefHat",
+        "color": "#FF7A00",
+        "description": "Cooking, recipes, food tours",
+        "count": 2
+    },
+    {
+        "id": "music",
+        "name": "Music",
+        "icon": "Music",
+        "color": "#A855F7",
+        "description": "Lofi, ambient, live sessions",
+        "count": 2
+    },
+    {
+        "id": "fitness",
+        "name": "Fitness",
+        "icon": "Dumbbell",
+        "color": "#EF4444",
+        "description": "Workouts, nutrition, wellness",
+        "count": 1
+    },
+    {
+        "id": "science",
+        "name": "Science",
+        "icon": "FlaskConical",
+        "color": "#3B82F6",
+        "description": "Space, nature, deep sea, physics",
+        "count": 3
+    },
+    {
+        "id": "business",
+        "name": "Business",
+        "icon": "TrendingUp",
+        "color": "#F59E0B",
+        "description": "Startups, finance, entrepreneurship",
+        "count": 2
+    },
+    {
+        "id": "lifestyle",
+        "name": "Lifestyle",
+        "icon": "Leaf",
+        "color": "#22C55E",
+        "description": "Meditation, design, home, wellness",
+        "count": 3
+    },
+    {
+        "id": "history",
+        "name": "History",
+        "icon": "BookOpen",
+        "color": "#D97706",
+        "description": "Documentaries, ancient civilizations",
+        "count": 1
+    },
+    {
+        "id": "gaming",
+        "name": "Gaming",
+        "icon": "Gamepad2",
+        "color": "#8B5CF6",
+        "description": "Strategy, esports, game reviews",
+        "count": 1
+    },
+    {
+        "id": "art",
+        "name": "Art",
+        "icon": "Palette",
+        "color": "#EC4899",
+        "description": "Painting, illustration, design",
+        "count": 1
+    },
+    {
+        "id": "sports",
+        "name": "Sports",
+        "icon": "Trophy",
+        "color": "#F97316",
+        "description": "F1, football, compilations",
+        "count": 1
+    }
+]
