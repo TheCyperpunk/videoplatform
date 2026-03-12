@@ -37,7 +37,7 @@ const ChannelSchema = new Schema<IChannel>(
 
 const VideoSchema = new Schema<IVideo>(
     {
-        id: { type: String, required: true, unique: true },
+        id: { type: String, required: false, unique: true, sparse: true },
         title: { type: String, required: true },
         thumbnail: { type: String, default: "" },
         duration: { type: String, default: "0:00" },

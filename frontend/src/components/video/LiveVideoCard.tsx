@@ -1,91 +1,51 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Video } from "@/types/video";
+
+function getThumbnail(video: Video): string {
+    if (video.thumbnail) return video.thumbnail;
+    let seed = 0;
+    const str = video.title || "video";
+    for (let i = 0; i < str.length; i++) seed += str.charCodeAt(i);
+    return `https://picsum.photos/seed/${seed % 1000}/400/225`;
+}
 
 interface LiveVideoCardProps {
     video: Video;
     className?: string;
 }
 
-// Generate a random duration in format "1:01 / 5:08"
-const getRandomDuration = () => {
-    const mins1 = Math.floor(Math.random() * 5);
-    const secs1 = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-    const mins2 = mins1 + Math.floor(Math.random() * 10) + 1;
-    const secs2 = Math.floor(Math.random() * 60).toString().padStart(2, '0');
-    return `${mins1}:${secs1} / ${mins2}:${secs2}`;
-};
-
 export function LiveVideoCard({ video, className }: LiveVideoCardProps) {
-    const durationStr = video.duration || getRandomDuration();
+    const durationStr = video.duration || null;
 
     return (
         <a
-            href={video.source_url || `#`}
+            href={video.source_url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-                display: 'block',
-                textDecoration: 'none',
-            }}
+            className={`block no-underline group ${className ?? ""}`}
             aria-label={`Watch ${video.title}`}
         >
             {/* Thumbnail */}
-            <div
-                style={{
-                    position: 'relative',
-                    width: '100%',
-                    aspectRatio: '16/9',
-                    backgroundColor: '#111',
-                    marginBottom: '8px',
-                    borderRadius: '12px', // CURVED EDGES
-                    overflow: 'hidden'
-                }}
-            >
+            <div className="relative w-full aspect-video bg-[#111] mb-2 rounded-xl overflow-hidden">
                 <Image
-                    src={video.thumbnail}
-                    alt={video.title}
+                    src={getThumbnail(video)}
+                    alt={video.title || "Video thumbnail"}
                     fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-                    style={{ objectFit: 'cover' }}
+                    unoptimized
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    priority
                 />
 
-                {/* Duration overlay (bottom right) */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        right: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        color: 'white',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        fontFamily: 'sans-serif'
-                    }}
-                >
-                    <span style={{ fontWeight: 800, fontStyle: 'italic', letterSpacing: '1px' }}>HD</span>
-                    <span>{durationStr}</span>
+                {/* HD + Duration badge */}
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 px-1.5 py-0.5 rounded text-white text-[11px] font-semibold">
+                    <span className="font-extrabold italic tracking-widest">HD</span>
+                    {durationStr && durationStr !== "0:00" && <span>{durationStr}</span>}
                 </div>
             </div>
 
-            {/* Title only */}
-            <h3
-                style={{
-                    color: '#CCCCCC',
-                    fontSize: '14px',
-                    margin: '0',
-                    padding: '0',
-                    fontFamily: 'sans-serif',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                }}
-            >
+            {/* Title */}
+            <h3 className="text-white text-base font-medium m-0 p-0 truncate leading-snug">
                 {video.title}
             </h3>
         </a>

@@ -14,30 +14,13 @@ export function SearchBar({
     placeholder = "Search videos, channels…",
 }: SearchBarProps) {
     return (
-        <div style={{
-            position: 'relative',
-            display: 'flex',
-            width: '100%',
-            alignItems: 'center',
-            borderRadius: '2px',
-            border: '1px solid #2A2A2A',
-            backgroundColor: '#161616',
-            height: '40px'
-        }}>
+        <div className="relative flex w-full items-center rounded-sm border border-[#2A2A2A] bg-[#161616] h-10">
             <input
                 type="text"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                style={{
-                    flex: 1,
-                    backgroundColor: 'transparent',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    color: 'white',
-                    border: 'none',
-                    outline: 'none'
-                }}
+                className="flex-1 bg-transparent px-4 py-2 text-sm text-white border-none outline-none placeholder-[#555]"
                 aria-label="Search videos"
             />
             {/* Clear */}
@@ -45,18 +28,7 @@ export function SearchBar({
                 <button
                     onClick={() => onChange("")}
                     aria-label="Clear search"
-                    style={{
-                        padding: '0 8px',
-                        color: '#666',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                    }}
+                    className="flex items-center justify-center h-full px-2 text-[#666] bg-transparent border-none cursor-pointer hover:text-white transition-colors"
                 >
                     ✕
                 </button>
@@ -64,20 +36,7 @@ export function SearchBar({
             {/* Search button */}
             <button
                 aria-label="Submit search"
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
-                    padding: '0 16px',
-                    borderLeft: '1px solid #2A2A2A',
-                    borderTop: 'none',
-                    borderBottom: 'none',
-                    borderRight: 'none',
-                    backgroundColor: 'transparent',
-                    color: '#888',
-                    cursor: 'pointer'
-                }}
+                className="flex items-center justify-center h-full px-4 border-l border-[#2A2A2A] bg-transparent text-[#888] cursor-pointer hover:text-white transition-colors"
             >
                 <Search size={16} />
             </button>

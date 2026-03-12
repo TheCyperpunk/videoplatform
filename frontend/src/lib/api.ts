@@ -78,13 +78,58 @@ export async function searchVideos(
     category?: string,
     sort?: string
 ): Promise<SearchResponse> {
-    const query = new URLSearchParams({ q });
-    if (category) query.set("category", category);
+    const query = new URLSearchParams({ search: q });
+    if (category && category !== "all") query.set("category", category);
     if (sort) query.set("sort", sort);
 
     const res = await fetch(`${BASE_URL}/api/search?${query.toString()}`, {
         cache: "no-store",
     });
     if (!res.ok) throw new Error(`Search failed: ${res.statusText}`);
+    return res.json();
+}
+
+// ── Adult Series types ──────────────────────────────────────────────────
+export interface WebSeries {
+    _id: string;
+    title: string;
+    series_slug: string;
+    redirect_url: string;
+    platform: string;
+    source_site: string;
+    description: string | null;
+    video_count: number;
+    episodes: Record<string, { title: string; duration_seconds?: number; uploaded_ago?: string }>;
+    released_at: string | null;
+    scraped_at: string;
+    status: string;
+}
+
+export interface AdultSeriesResponse {
+    data: WebSeries[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+    error: string | null;
+}
+
+// ── Fetch adult series ──────────────────────────────────────────────────
+export async function fetchAdultSeries(params?: {
+    page?: number;
+    limit?: number;
+    platform?: string;
+    search?: string;
+}): Promise<AdultSeriesResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.platform) query.set("platform", params.platform);
+    if (params?.search) query.set("search", params.search);
+
+    const res = await fetch(`${BASE_URL}/api/uncutmaza.webseries?${query.toString()}`, {
+        cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Failed to fetch adult series: ${res.statusText}`);
     return res.json();
 }

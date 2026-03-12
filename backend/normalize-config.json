@@ -1,0 +1,24 @@
+{
+  "jobs": [
+    {
+      "input": "C:\\Users\\sangeeth karunakaran\\Downloads\\dinotube (2).json",
+      "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_dinotube.json"
+    },
+    {
+      "input": "C:\\Users\\sangeeth karunakaran\\Downloads\\assoass.json",
+      "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_assoass.json"
+    },
+    {
+      "input": "C:\\Users\\sangeeth karunakaran\\Downloads\\desihub.json",
+      "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_desihub.json"
+    },
+    {
+      "input": "C:\\Users\\sangeeth karunakaran\\Downloads\\uncutmaza-com-co-2026-03-07-2.json",
+      "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_uncutmaza_rich.json"
+    },
+    {
+      "input": "already-normalized",
+      "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_desihub_org.json"
+    }
+  ]
+}
