@@ -1,123 +1,150 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useSearch } from "@/context/SearchContext";
-import { SearchBar } from "@/components/video/SearchBar";
+import { useState, useEffect } from "react";
 
 const navLinks = [
-    { label: "Videos", hasDropdown: true },
-    { label: "Categories", hasDropdown: true },
+    {
+        label: "Videos",
+        href: "/explore",
+        hasDropdown: true,
+        dropdownItems: [
+            { label: "Popular videos", href: "/explore?sort=popular" },
+            { label: "New videos", href: "/explore?sort=newest" },
+            { label: "Top rated videos", href: "/explore?sort=top_rated" },
+        ]
+    },
+    {
+        label: "Categories",
+        hasDropdown: true,
+        dropdownItems: [
+            { label: "Gaming", href: "/explore?category=gaming" },
+            { label: "Music", href: "/explore?category=music" },
+            { label: "Sports", href: "/explore?category=sports" },
+            { label: "Adult series", href: "/adult-series" },
+        ]
+    },
     { label: "Live cams", hasDropdown: true },
     { label: "AI chat", hasDropdown: true },
     { label: "Our network", hasDropdown: false },
 ];
 
+import { useRouter, usePathname } from "next/navigation";
+
 export function Navbar() {
     const { searchQuery, setSearchQuery } = useSearch();
+    const [searchFocused, setSearchFocused] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => setOpenDropdown(null);
+        window.addEventListener("click", handleClickOutside);
+        return () => window.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        if (pathname !== "/explore" && e.target.value.trim() !== "") {
+            router.push("/explore");
+        }
+    };
 
     return (
-        <header style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 50,
-            backgroundColor: '#0D0D0D',
-            borderBottom: '1px solid #1C1C1C',
-            fontFamily: 'sans-serif'
-        }}>
+        <header className="sticky top-0 z-50 bg-[#0A0A0A] border-b border-[#1E1E1E] font-[Barlow,sans-serif]">
+
             {/* ── Row 1: Logo · Search ── */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                padding: '0 24px',
-                height: '56px',
-                maxWidth: '1800px',
-                margin: '0 auto'
-            }}>
+            <div className="flex flex-wrap items-center gap-2 px-5 py-2.5 sm:h-[58px] sm:flex-nowrap sm:py-0 max-w-[1800px] mx-auto">
+
                 {/* Logo */}
-                <Link href="/" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    textDecoration: 'none',
-                    flexShrink: 0
-                }}>
-                    <div style={{
-                        display: 'flex',
-                        height: '32px',
-                        width: '32px',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #FF3B3B, #FF7A00)',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '14px',
-                        boxShadow: '0 4px 12px rgba(255,59,59,0.3)'
-                    }}>
-                        V
-                    </div>
-                    <span style={{
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        letterSpacing: '-0.5px',
-                        color: 'white'
-                    }}>
-                        Videx
-                    </span>
-                    <span style={{ color: '#FF3B3B', fontSize: '18px', marginLeft: '-2px' }}>●</span>
+                <Link href="/" className="flex items-center no-underline shrink-0 min-w-[100px]">
+                    <span className="text-2xl font-black tracking-tight text-white">Vid</span>
+                    <span className="text-2xl font-black tracking-tight text-[#F5A200]">ex</span>
                 </Link>
 
-                {/* Search bar */}
-                <div style={{
-                    display: 'flex',
-                    flex: 1,
-                    maxWidth: '672px',
-                    margin: '0 auto'
-                }}>
-                    <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search videos, channels…" />
+                {/* Search bar — full width on mobile, flex-1 on desktop */}
+                <div className={`
+                    flex items-center w-full sm:flex-1 sm:max-w-[720px] sm:mx-auto h-[38px]
+                    rounded border bg-[#181818] overflow-hidden transition-colors
+                    ${searchFocused ? 'border-[#555]' : 'border-[#2E2E2E]'}
+                `}>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        onFocus={() => setSearchFocused(true)}
+                        onBlur={() => setSearchFocused(false)}
+                        placeholder="Search videos, channels…"
+                        className="flex-1 h-full bg-transparent border-none outline-none text-white text-sm px-3.5 placeholder-[#666] font-[Barlow,sans-serif]"
+                    />
+                    <button className="flex items-center justify-center w-[42px] h-full bg-[#252525] border-l border-[#2E2E2E] cursor-pointer text-[#999] shrink-0 hover:text-white transition-colors">
+                        <Search size={16} />
+                    </button>
                 </div>
             </div>
 
             {/* ── Row 2: Sub-nav links ── */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '0 24px',
-                height: '40px',
-                borderTop: '1px solid #1C1C1C',
-                overflowX: 'auto',
-                whiteSpace: 'nowrap',
-                maxWidth: '1800px',
-                margin: '0 auto'
-            }}>
-                {navLinks.map((link) => (
-                    <button
-                        key={link.label}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1C1C1C')}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '6px 12px',
-                            fontSize: '14px',
-                            color: '#CCCCCC',
-                            background: 'none',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            transition: 'background-color 0.2s'
-                        }}
-                    >
-                        {link.label}
-                        {link.hasDropdown && <ChevronDown size={13} style={{ opacity: 0.6 }} />}
-                    </button>
-                ))}
+            <div className="flex flex-wrap items-center px-5 min-h-[38px] border-t border-[#1A1A1A] max-w-[1800px] mx-auto gap-0.5 relative z-40">
+                {navLinks.map((link) => {
+                    const isOpen = openDropdown === link.label;
+
+                    const content = (
+                        <>
+                            {link.label}
+                            {link.hasDropdown && (
+                                <ChevronDown
+                                    size={12}
+                                    className={`opacity-60 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                                />
+                            )}
+                        </>
+                    );
+
+                    const triggerClassName = `inline-flex items-center gap-1 px-3 py-1.5 text-[15px] font-medium text-white rounded transition-all shrink-0 cursor-pointer border-none bg-transparent no-underline hover:bg-[#252525] ${isOpen ? 'bg-[#252525]' : ''}`;
+
+                    const handleTriggerClick = (e: React.MouseEvent) => {
+                        if (link.hasDropdown) {
+                            e.stopPropagation();
+                            setOpenDropdown(isOpen ? null : link.label);
+                        }
+                    };
+
+                    const trigger = link.href && !link.hasDropdown ? (
+                        <Link href={link.href} className={triggerClassName}>
+                            {content}
+                        </Link>
+                    ) : (
+                        <button onClick={handleTriggerClick} className={triggerClassName}>
+                            {content}
+                        </button>
+                    );
+
+                    return (
+                        <div key={link.label} className="relative group">
+                            {trigger}
+
+                            {/* Dropdown Menu */}
+                            {link.hasDropdown && link.dropdownItems && isOpen && (
+                                <div className="absolute left-0 top-full mt-2 flex flex-col min-w-[190px] bg-[#1A1A1A] border border-[#2E2E2E] rounded-md shadow-2xl py-2 z-50">
+                                    {link.dropdownItems.map((item) => (
+                                        <Link
+                                            key={item.label}
+                                            href={item.href}
+                                            onClick={() => setOpenDropdown(null)}
+                                            className="px-4 py-2.5 text-[15px] font-medium text-white hover:bg-[#252525] transition-colors"
+                                        >
+                                            {item.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </header>
     );

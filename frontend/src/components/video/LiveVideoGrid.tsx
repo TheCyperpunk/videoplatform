@@ -8,33 +8,10 @@ interface LiveVideoGridProps {
 
 export function LiveVideoGrid({ videos, className }: LiveVideoGridProps) {
     return (
-        <>
-            <style>{`
-                .live-video-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 8px 8px;
-                }
-                .live-video-grid > * {
-                    box-sizing: border-box;
-                    min-width: 0;
-                    font-size: 12px;
-                }
-                @media (min-width: 640px) {
-                    .live-video-grid {
-                        grid-template-columns: repeat(6, 1fr);
-                        gap: 20px 16px;
-                    }
-                    .live-video-grid > * {
-                        font-size: 14px;
-                    }
-                }
-            `}</style>
-            <div className={`live-video-grid${className ? ` ${className}` : ""}`}>
-                {videos.map((video) => (
-                    <LiveVideoCard key={video.id} video={video} />
-                ))}
-            </div>
-        </>
+        <div className={`grid grid-cols-2 sm:grid-cols-6 gap-1.5 sm:gap-x-2.5 sm:gap-y-3 ${className ?? ""}`}>
+            {videos.map((video, index) => (
+                <LiveVideoCard key={video.id || (video as any)._id || index} video={video} />
+            ))}
+        </div>
     );
 }

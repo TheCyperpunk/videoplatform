@@ -6,6 +6,7 @@ import connectDB from "./config/db";
 import videoRoutes from "./routes/videos";
 import searchRoutes from "./routes/search";
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -19,6 +20,7 @@ app.use(morgan("dev")); // logs: GET /api/videos 200 12ms
 // ── Routes ─────────────────────────────────────────────────────────────
 app.use("/api/videos", videoRoutes);
 app.use("/api/search", searchRoutes);
+
 
 // ── Health check ───────────────────────────────────────────────────────
 app.get("/api/health", (_req: Request, res: Response) => {

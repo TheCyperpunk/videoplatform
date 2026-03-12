@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Providers } from "@/components/layout/Providers";
 import { SearchProvider } from "@/context/SearchContext";
+import { AgeVerificationModal } from "@/components/layout/AgeVerificationModal";
 
 export const metadata: Metadata = {
   title: "Videx – Stream. Discover. Explore.",
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="bg-[#0A0A0A] text-white min-h-screen antialiased">
         <Providers>
           <SearchProvider>
+            <AgeVerificationModal />
             <Navbar />
             <main>
               {children}
