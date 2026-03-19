@@ -19,6 +19,10 @@
     {
       "input": "already-normalized",
       "output": "C:\\Users\\sangeeth karunakaran\\Downloads\\normalized_desihub_org.json"
+    },
+    {
+      "input": "already-normalized",
+      "output": "C:\\Users\\sangeeth karunakaran\\Desktop\\videoplatform\\backend\\normalized_auntymaza.json"
     }
   ]
 }

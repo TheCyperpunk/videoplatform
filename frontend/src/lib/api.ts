@@ -22,6 +22,9 @@ export interface VideoDetailResponse {
 export interface SearchResponse {
     data: Video[];
     total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
     query: string;
     error: string | null;
 }
@@ -76,11 +79,15 @@ export async function fetchTrending(): Promise<TrendingResponse> {
 export async function searchVideos(
     q: string,
     category?: string,
-    sort?: string
+    sort?: string,
+    page?: number,
+    limit?: number
 ): Promise<SearchResponse> {
-    const query = new URLSearchParams({ search: q });
+    const query = new URLSearchParams({ q });
     if (category && category !== "all") query.set("category", category);
     if (sort) query.set("sort", sort);
+    if (page)  query.set("page",  String(page));
+    if (limit) query.set("limit", String(limit));
 
     const res = await fetch(`${BASE_URL}/api/search?${query.toString()}`, {
         cache: "no-store",
@@ -131,5 +138,17 @@ export async function fetchAdultSeries(params?: {
         cache: "no-store",
     });
     if (!res.ok) throw new Error(`Failed to fetch adult series: ${res.statusText}`);
+    return res.json();
+}
+
+// ── Fetch distinct categories ────────────────────────────────────────────────
+export interface CategoryItem {
+    value: string;
+    count: number;
+}
+
+export async function fetchCategories(): Promise<{ data: CategoryItem[]; error: string | null }> {
+    const res = await fetch(`${BASE_URL}/api/categories`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed to fetch categories: ${res.statusText}`);
     return res.json();
 }

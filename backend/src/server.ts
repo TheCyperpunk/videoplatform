@@ -5,6 +5,7 @@ import morgan from "morgan";
 import connectDB from "./config/db";
 import videoRoutes from "./routes/videos";
 import searchRoutes from "./routes/search";
+import categoryRoutes from "./routes/categories";
 
 
 const app = express();
@@ -18,8 +19,9 @@ app.use(morgan("dev")); // logs: GET /api/videos 200 12ms
 
 
 // ── Routes ─────────────────────────────────────────────────────────────
-app.use("/api/videos", videoRoutes);
-app.use("/api/search", searchRoutes);
+app.use("/api/videos",     videoRoutes);
+app.use("/api/search",     searchRoutes);
+app.use("/api/categories", categoryRoutes);
 
 
 // ── Health check ───────────────────────────────────────────────────────
