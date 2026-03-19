@@ -4,41 +4,44 @@ import Link from "next/link";
 import { ChevronDown, Search } from "lucide-react";
 import { useSearch } from "@/context/SearchContext";
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { fetchCategories, type CategoryItem } from "@/lib/api";
 
-const navLinks = [
+// Format a category slug like "web-series" → "Web Series"
+function formatLabel(slug: string): string {
+    return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const staticNavLinks = [
     {
         label: "Videos",
         href: "/explore",
         hasDropdown: true,
         dropdownItems: [
-            { label: "Popular videos", href: "/explore?sort=popular" },
-            { label: "New videos", href: "/explore?sort=newest" },
-            { label: "Top rated videos", href: "/explore?sort=top_rated" },
+            { label: "New videos",       href: "/explore?sort=date" },
+            { label: "Popular videos",   href: "/explore?sort=views" },
+            { label: "Top rated videos", href: "/explore?sort=likes" },
         ]
     },
-    {
-        label: "Categories",
-        hasDropdown: true,
-        dropdownItems: [
-            { label: "Gaming", href: "/explore?category=gaming" },
-            { label: "Music", href: "/explore?category=music" },
-            { label: "Sports", href: "/explore?category=sports" },
-            { label: "Adult series", href: "/adult-series" },
-        ]
-    },
-    { label: "Live cams", hasDropdown: true },
-    { label: "AI chat", hasDropdown: true },
+    { label: "Live cams",   hasDropdown: true },
+    { label: "AI chat",     hasDropdown: true },
     { label: "Our network", hasDropdown: false },
 ];
-
-import { useRouter, usePathname } from "next/navigation";
 
 export function Navbar() {
     const { searchQuery, setSearchQuery } = useSearch();
     const [searchFocused, setSearchFocused] = useState(false);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const router = useRouter();
+    const [openDropdown,  setOpenDropdown]  = useState<string | null>(null);
+    const [categories,    setCategories]    = useState<CategoryItem[]>([]);
+    const router   = useRouter();
     const pathname = usePathname();
+
+    // Fetch real categories from DB on mount
+    useEffect(() => {
+        fetchCategories()
+            .then((res) => setCategories(res.data.slice(0, 12))) // top 12
+            .catch(() => {});
+    }, []);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -54,6 +57,22 @@ export function Navbar() {
         }
     };
 
+    // Build nav links injecting real categories
+    const categoriesDropdown = {
+        label: "Categories",
+        hasDropdown: true,
+        dropdownItems: categories.map((cat) => ({
+            label: formatLabel(cat.value),
+            href:  `/explore?category=${cat.value}`,
+        })),
+    };
+
+    const navLinks = [
+        staticNavLinks[0],       // Videos
+        categoriesDropdown,      // Categories (dynamic from DB)
+        ...staticNavLinks.slice(1), // Live cams, AI chat, Our network
+    ];
+
     return (
         <header className="sticky top-0 z-50 bg-[#0A0A0A] border-b border-[#1E1E1E] font-[Barlow,sans-serif]">
 
@@ -66,7 +85,7 @@ export function Navbar() {
                     <span className="text-2xl font-black tracking-tight text-[#F5A200]">ex</span>
                 </Link>
 
-                {/* Search bar — full width on mobile, flex-1 on desktop */}
+                {/* Search bar */}
                 <div className={`
                     flex items-center w-full sm:flex-1 sm:max-w-[720px] sm:mx-auto h-[38px]
                     rounded border bg-[#181818] overflow-hidden transition-colors
@@ -81,14 +100,24 @@ export function Navbar() {
                         placeholder="Search videos, channels…"
                         className="flex-1 h-full bg-transparent border-none outline-none text-white text-sm px-3.5 placeholder-[#666] font-[Barlow,sans-serif]"
                     />
-                    <button className="flex items-center justify-center w-[42px] h-full bg-[#252525] border-l border-[#2E2E2E] cursor-pointer text-[#999] shrink-0 hover:text-white transition-colors">
+                    {/* Clear button */}
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            className="flex items-center justify-center w-[32px] h-full text-[#777] hover:text-white transition-colors shrink-0 text-2xl font-light leading-none focus:outline-none focus-visible:outline-none"
+                            aria-label="Clear search"
+                        >
+                            ×
+                        </button>
+                    )}
+                    <button className="flex items-center justify-center w-[42px] h-full bg-[#252525] border-l border-[#2E2E2E] cursor-pointer text-[#999] shrink-0 hover:text-white transition-colors focus:outline-none focus-visible:outline-none">
                         <Search size={16} />
                     </button>
                 </div>
             </div>
 
             {/* ── Row 2: Sub-nav links ── */}
-            <div className="flex flex-wrap items-center px-5 min-h-[38px] border-t border-[#1A1A1A] max-w-[1800px] mx-auto gap-0.5 relative z-40">
+            <div className="flex flex-nowrap sm:flex-wrap items-center px-5 min-h-[38px] border-t border-[#1A1A1A] max-w-[1800px] mx-auto gap-0.5 relative z-40 overflow-x-auto sm:overflow-visible no-scrollbar">
                 {navLinks.map((link) => {
                     const isOpen = openDropdown === link.label;
 
@@ -104,7 +133,7 @@ export function Navbar() {
                         </>
                     );
 
-                    const triggerClassName = `inline-flex items-center gap-1 px-3 py-1.5 text-[15px] font-medium text-white rounded transition-all shrink-0 cursor-pointer border-none bg-transparent no-underline hover:bg-[#252525] ${isOpen ? 'bg-[#252525]' : ''}`;
+                    const triggerClassName = `inline-flex items-center gap-1 px-3 py-1.5 text-[15px] font-medium text-white whitespace-nowrap rounded transition-all shrink-0 cursor-pointer border-none bg-transparent no-underline hover:bg-[#252525] ${isOpen ? 'bg-[#252525]' : ''}`;
 
                     const handleTriggerClick = (e: React.MouseEvent) => {
                         if (link.hasDropdown) {
@@ -113,8 +142,8 @@ export function Navbar() {
                         }
                     };
 
-                    const trigger = link.href && !link.hasDropdown ? (
-                        <Link href={link.href} className={triggerClassName}>
+                    const trigger = (link as any).href && !link.hasDropdown ? (
+                        <Link href={(link as any).href} className={triggerClassName}>
                             {content}
                         </Link>
                     ) : (
@@ -126,26 +155,31 @@ export function Navbar() {
                     return (
                         <div key={link.label} className="relative group">
                             {trigger}
-
-                            {/* Dropdown Menu */}
-                            {link.hasDropdown && link.dropdownItems && isOpen && (
-                                <div className="absolute left-0 top-full mt-2 flex flex-col min-w-[190px] bg-[#1A1A1A] border border-[#2E2E2E] rounded-md shadow-2xl py-2 z-50">
-                                    {link.dropdownItems.map((item) => (
-                                        <Link
-                                            key={item.label}
-                                            href={item.href}
-                                            onClick={() => setOpenDropdown(null)}
-                                            className="px-4 py-2.5 text-[15px] font-medium text-white hover:bg-[#252525] transition-colors"
-                                        >
-                                            {item.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     );
                 })}
             </div>
+
+            {/* ── Global Dropdown Portal (escapes overflow clipping!) ── */}
+            {openDropdown && (() => {
+                const activeLink = (navLinks as any).find((l: any) => l.label === openDropdown);
+                if (!activeLink || !activeLink.dropdownItems) return null;
+                
+                return (
+                    <div className="absolute top-[100%] left-5 mt-1 flex flex-col min-w-[200px] bg-[#1A1A1A] border border-[#2E2E2E] rounded-md shadow-2xl py-2 z-50 max-h-[340px] overflow-y-auto">
+                        {activeLink.dropdownItems.map((item: { label: string; href: string }) => (
+                            <Link
+                                key={item.label}
+                                href={item.href}
+                                onClick={() => setOpenDropdown(null)}
+                                className="block px-4 py-2.5 text-[15px] font-medium text-white hover:bg-[#252525] transition-colors"
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                    </div>
+                );
+            })()}
         </header>
     );
 }
