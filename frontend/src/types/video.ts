@@ -21,6 +21,7 @@ export interface Video {
     trending_rank: number | null;
     source_url: string;
     scraped_at: string;
+    source?: string; // Optional field to track video source (local, redtube, apijav, etc.)
 }
 
 export interface WatchPageData {

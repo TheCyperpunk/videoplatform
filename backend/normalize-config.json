@@ -23,6 +23,10 @@
     {
       "input": "already-normalized",
       "output": "C:\\Users\\sangeeth karunakaran\\Desktop\\videoplatform\\backend\\normalized_auntymaza.json"
+    },
+    {
+      "input": "already-normalized",
+      "output": "C:\\Users\\sangeeth karunakaran\\Desktop\\videoplatform\\normalized_152ip.json"
     }
   ]
 }

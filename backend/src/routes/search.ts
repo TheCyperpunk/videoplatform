@@ -1,59 +1,85 @@
-import { Router, Request, Response } from "express";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import Video from "../models/Video";
 
-const router = Router();
+async function searchRoutes(fastify: FastifyInstance) {
+    // ── GET /api/search?q=&category=&sort=&page=&limit= ────────────────────
+    fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const query = request.query as any;
+            const q        = ((query.q as string) || "").trim();
+            const category = (query.category as string) || "";
+            const sort     = (query.sort as string) || "date";
+            const page     = Math.max(1, parseInt(query.page as string) || 1);
+            const limit    = Math.min(200, Math.max(1, parseInt(query.limit as string) || 120));
 
-// ── GET /api/search?q=&category=&sort=&page=&limit= ────────────────────
-router.get("/", async (req: Request, res: Response) => {
-    try {
-        const q        = ((req.query.q as string) || "").trim();
-        const category = (req.query.category as string) || "";
-        const sort     = (req.query.sort as string) || "date";
-        const page     = Math.max(1, parseInt(req.query.page as string) || 1);
-        const limit    = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 120));
+            if (!q) {
+                return { data: [], total: 0, page, limit, hasMore: false, query: q, error: null };
+            }
 
-        if (!q) {
-            res.json({ data: [], total: 0, page, limit, hasMore: false, query: q, error: null });
-            return;
+            const filter: Record<string, unknown> = {
+                $or: [
+                    { title:          { $regex: q, $options: "i" } },
+                    { description:    { $regex: q, $options: "i" } },
+                    { tags:           { $elemMatch: { $regex: q, $options: "i" } } },
+                    { "channel.name": { $regex: q, $options: "i" } },
+                ],
+            };
+
+            if (category && category !== "all") filter.category = category;
+
+            let sortQuery: Record<string, 1 | -1>;
+            
+            switch (sort) {
+                case "date":
+                    sortQuery = { createdAt: -1 };
+                    break;
+                case "views":
+                    // Since most videos have views: 0, use publishedAt as secondary sort
+                    sortQuery = { views: -1, publishedAt: -1, createdAt: -1 };
+                    break;
+                case "likes":
+                    sortQuery = { likes: -1, createdAt: -1 };
+                    break;
+                default:
+                    sortQuery = { createdAt: -1 };
+            }
+
+            const total = await Video.countDocuments(filter);
+            const data  = await Video.find(filter, {
+                // Only select fields we need
+                _id: 1,
+                id: 1,
+                title: 1,
+                thumbnail: 1,
+                duration: 1,
+                views: 1,
+                likes: 1,
+                publishedAt: 1,
+                channel: 1,
+                category: 1,
+                quality: 1,
+                source_url: 1,
+                createdAt: 1
+            })
+                .sort(sortQuery)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(); // Use lean() for faster queries
+
+            return {
+                data,
+                total,
+                page,
+                limit,
+                hasMore: page * limit < total,
+                query: q,
+                error: null,
+            };
+        } catch (err) {
+            reply.code(500);
+            return { data: [], total: 0, page: 1, limit: 120, hasMore: false, query: "", error: String(err) };
         }
+    });
+}
 
-        const filter: Record<string, unknown> = {
-            $or: [
-                { title:          { $regex: q, $options: "i" } },
-                { description:    { $regex: q, $options: "i" } },
-                { tags:           { $elemMatch: { $regex: q, $options: "i" } } },
-                { "channel.name": { $regex: q, $options: "i" } },
-            ],
-        };
-
-        if (category && category !== "all") filter.category = category;
-
-        const sortMap: Record<string, Record<string, 1 | -1>> = {
-            date:  { publishedAt: -1 },
-            views: { views: -1 },
-            likes: { likes: -1 },
-        };
-        const sortQuery = sortMap[sort] ?? { publishedAt: -1 };
-
-        const total = await Video.countDocuments(filter);
-        const data  = await Video.find(filter)
-            .sort(sortQuery)
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean();
-
-        res.json({
-            data,
-            total,
-            page,
-            limit,
-            hasMore: page * limit < total,
-            query: q,
-            error: null,
-        });
-    } catch (err) {
-        res.status(500).json({ data: [], total: 0, page: 1, limit: 120, hasMore: false, query: "", error: String(err) });
-    }
-});
-
-export default router;
+export default searchRoutes;

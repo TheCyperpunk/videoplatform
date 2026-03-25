@@ -1,28 +1,31 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 interface SearchContextType {
     searchQuery: string;
-    debouncedQuery: string;
+    activeQuery: string; // The query that triggers actual search
     setSearchQuery: (query: string) => void;
+    triggerSearch: () => void; // Manual search trigger
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export function SearchProvider({ children }: { children: ReactNode }) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [debouncedQuery, setDebouncedQuery] = useState("");
+    const [activeQuery, setActiveQuery] = useState(""); // Only updates when search is triggered
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedQuery(searchQuery);
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+    const triggerSearch = () => {
+        setActiveQuery(searchQuery); // Set active query to current input
+    };
 
     return (
-        <SearchContext.Provider value={{ searchQuery, debouncedQuery, setSearchQuery }}>
+        <SearchContext.Provider value={{ 
+            searchQuery, 
+            activeQuery, 
+            setSearchQuery, 
+            triggerSearch 
+        }}>
             {children}
         </SearchContext.Provider>
     );
