@@ -4,124 +4,86 @@ interface PaginationProps {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
+    disabled?: boolean;
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-    // Build page number array with ellipsis logic
-    const getPages = (): (number | "...")[] => {
-        if (totalPages <= 7) {
-            return Array.from({ length: totalPages }, (_, i) => i + 1);
+export function Pagination({ currentPage, totalPages, onPageChange, disabled = false }: PaginationProps) {
+    // Show a sliding window of 5 pages centred around currentPage
+    const getPages = (): number[] => {
+        const total = Math.max(1, totalPages);
+        const windowSize = 5;
+        let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
+        let end   = start + windowSize - 1;
+        if (end > total) {
+            end   = total;
+            start = Math.max(1, end - windowSize + 1);
         }
-        const pages: (number | "...")[] = [1];
-        if (currentPage > 3) pages.push("...");
-        const start = Math.max(2, currentPage - 1);
-        const end = Math.min(totalPages - 1, currentPage + 1);
+        const pages: number[] = [];
         for (let i = start; i <= end; i++) pages.push(i);
-        if (currentPage < totalPages - 2) pages.push("...");
-        pages.push(totalPages);
         return pages;
     };
 
     const pages = getPages();
 
+    const baseBtn =
+        "inline-flex items-center justify-center w-[42px] h-[44px] rounded-[10px] font-bold cursor-pointer select-none transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed";
+
     return (
-        <>
-            <style>{`
-                .pagination-wrapper {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 6px;
-                    padding: 28px 16px 80px;
-                    flex-wrap: wrap;
-                }
-                .pg-btn {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-width: 36px;
-                    height: 36px;
-                    padding: 0 10px;
-                    border-radius: 8px;
-                    border: 1px solid #2a2a2a;
-                    background: #1a1a1a;
-                    color: #aaa;
-                    font-size: 13px;
-                    font-family: sans-serif;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: background 0.15s, color 0.15s, border-color 0.15s;
-                    user-select: none;
-                }
-                .pg-btn:hover:not(:disabled) {
-                    background: #252525;
-                    color: #fff;
-                    border-color: #444;
-                }
-                .pg-btn.active {
-                    background: #e53935;
-                    color: #fff;
-                    border-color: #e53935;
-                    font-weight: 700;
-                }
-                .pg-btn:disabled {
-                    opacity: 0.35;
-                    cursor: not-allowed;
-                }
-                .pg-ellipsis {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-width: 36px;
-                    height: 36px;
-                    color: #555;
-                    font-size: 14px;
-                    font-family: sans-serif;
-                    pointer-events: none;
-                }
-                @media (max-width: 400px) {
-                    .pg-btn { min-width: 30px; height: 30px; font-size: 12px; padding: 0 7px; }
-                }
-            `}</style>
+        <nav
+            className="flex items-center justify-center gap-2 py-7 pb-20 flex-wrap"
+            aria-label="Pagination"
+        >
+            {/* Prev */}
+            <button
+                className={`${baseBtn} bg-[#1a1b1e] text-[#5c5f66] hover:bg-[#25262b] hover:text-[#909296]`}
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={disabled || currentPage === 1}
+                aria-label="Previous page"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
 
-            <nav className="pagination-wrapper" aria-label="Pagination">
-                {/* Prev */}
-                <button
-                    className="pg-btn"
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    aria-label="Previous page"
-                >
-                    ‹
-                </button>
+            {/* Page numbers */}
+            {pages.map((p) =>
+                p === currentPage ? (
+                    /* Active page – white box, dark text */
+                    <button
+                        key={p}
+                        className={`${baseBtn} bg-[#f8f9fa] text-[#141517] text-[15px] cursor-default shadow-sm`}
+                        onClick={() => onPageChange(p)}
+                        disabled={disabled}
+                        aria-label={`Page ${p}`}
+                        aria-current="page"
+                    >
+                        {p}
+                    </button>
+                ) : (
+                    /* Inactive pages – dark box, gray text */
+                    <button
+                        key={p}
+                        className={`${baseBtn} bg-[#1a1b1e] text-[#909296] text-[15px] hover:bg-[#25262b] hover:text-white`}
+                        onClick={() => onPageChange(p)}
+                        disabled={disabled}
+                        aria-label={`Page ${p}`}
+                    >
+                        {p}
+                    </button>
+                )
+            )}
 
-                {/* Page numbers */}
-                {pages.map((p, idx) =>
-                    p === "..." ? (
-                        <span key={`ellipsis-${idx}`} className="pg-ellipsis">…</span>
-                    ) : (
-                        <button
-                            key={p}
-                            className={`pg-btn${p === currentPage ? " active" : ""}`}
-                            onClick={() => onPageChange(p as number)}
-                            aria-label={`Page ${p}`}
-                            aria-current={p === currentPage ? "page" : undefined}
-                        >
-                            {p}
-                        </button>
-                    )
-                )}
-
-                {/* Next */}
-                <button
-                    className="pg-btn"
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    aria-label="Next page"
-                >
-                    ›
-                </button>
-            </nav>
-        </>
+            {/* Next – gold box, dark text */}
+            <button
+                className={`${baseBtn} bg-[#f5a524] text-[#141517] hover:bg-[#f5b84c] shadow-sm`}
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={disabled || currentPage === totalPages}
+                aria-label="Next page"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+        </nav>
     );
 }

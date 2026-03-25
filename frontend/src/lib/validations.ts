@@ -35,7 +35,6 @@ export const CategorySchema = z.object({
 export const SearchParamsSchema = z.object({
     q: z.string().min(1).optional(),
     category: z.string().optional(),
-    sort: z.enum(["views", "date", "likes", "duration"]).optional().default("date"),
     quality: z.enum(["all", "720p", "1080p", "4K"]).optional().default("all"),
     page: z.coerce.number().min(1).optional().default(1),
     limit: z.coerce.number().min(1).max(48).optional().default(12),

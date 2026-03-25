@@ -7,7 +7,6 @@ interface AppState extends FilterState {
     sidebarOpen: boolean;
     setCategory: (category: string) => void;
     setSearchQuery: (query: string) => void;
-    setSort: (sort: FilterState["sort"]) => void;
     setQuality: (quality: FilterState["quality"]) => void;
     setViewMode: (viewMode: FilterState["viewMode"]) => void;
     toggleSidebar: () => void;
@@ -16,7 +15,6 @@ interface AppState extends FilterState {
 
 const defaultFilters: FilterState = {
     category: "all",
-    sort: "date",
     quality: "all",
     viewMode: "grid",
     searchQuery: "",
@@ -27,7 +25,6 @@ export const useAppStore = create<AppState>((set) => ({
     sidebarOpen: false,
     setCategory: (category) => set({ category }),
     setSearchQuery: (searchQuery) => set({ searchQuery }),
-    setSort: (sort) => set({ sort }),
     setQuality: (quality) => set({ quality }),
     setViewMode: (viewMode) => set({ viewMode }),
     toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),

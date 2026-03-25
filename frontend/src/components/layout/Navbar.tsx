@@ -29,7 +29,7 @@ const staticNavLinks = [
 ];
 
 export function Navbar() {
-    const { searchQuery, setSearchQuery } = useSearch();
+    const { searchQuery, setSearchQuery, triggerSearch } = useSearch();
     const [searchFocused, setSearchFocused] = useState(false);
     const [openDropdown,  setOpenDropdown]  = useState<string | null>(null);
     const [categories,    setCategories]    = useState<CategoryItem[]>([]);
@@ -52,8 +52,20 @@ export function Navbar() {
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
-        if (pathname !== "/explore" && e.target.value.trim() !== "") {
-            router.push("/explore");
+    };
+
+    const handleSearchSubmit = () => {
+        if (searchQuery.trim() !== "") {
+            if (pathname !== "/explore") {
+                router.push("/explore");
+            }
+            triggerSearch(); // Trigger the actual search
+        }
+    };
+
+    const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
         }
     };
 
@@ -95,6 +107,7 @@ export function Navbar() {
                         type="text"
                         value={searchQuery}
                         onChange={handleSearchChange}
+                        onKeyPress={handleSearchKeyPress}
                         onFocus={() => setSearchFocused(true)}
                         onBlur={() => setSearchFocused(false)}
                         placeholder="Search videos, channels…"
@@ -110,7 +123,9 @@ export function Navbar() {
                             ×
                         </button>
                     )}
-                    <button className="flex items-center justify-center w-[42px] h-full bg-[#252525] border-l border-[#2E2E2E] cursor-pointer text-[#999] shrink-0 hover:text-white transition-colors focus:outline-none focus-visible:outline-none">
+                    <button 
+                        onClick={handleSearchSubmit}
+                        className="flex items-center justify-center w-[42px] h-full bg-[#252525] border-l border-[#2E2E2E] cursor-pointer text-[#999] shrink-0 hover:text-white transition-colors focus:outline-none focus-visible:outline-none">
                         <Search size={16} />
                     </button>
                 </div>

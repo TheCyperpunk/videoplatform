@@ -56,8 +56,14 @@ const VideoSchema = new Schema<IVideo>(
     { timestamps: true }
 );
 
-// Text index for search
-VideoSchema.index({ title: "text", description: "text", tags: "text" });
+// Performance indexes for faster queries
+VideoSchema.index({ title: "text", description: "text", tags: "text" }); // Text search
+VideoSchema.index({ createdAt: -1 }); // For newest/date sorting
+VideoSchema.index({ views: -1, createdAt: -1 }); // For views sorting
+VideoSchema.index({ likes: -1, createdAt: -1 }); // For likes sorting
+VideoSchema.index({ category: 1, createdAt: -1 }); // For category filtering
+VideoSchema.index({ trending_rank: 1 }); // For trending videos
+VideoSchema.index({ likes: 1 }); // For top-rated filtering (likes > 0)
 
 const Video = mongoose.model<IVideo>("Video", VideoSchema);
 export default Video;

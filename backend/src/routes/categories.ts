@@ -1,22 +1,23 @@
-import { Router, Request, Response } from "express";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import Video from "../models/Video";
 
-const router = Router();
+async function categoryRoutes(fastify: FastifyInstance) {
+    // ── GET /api/categories ───────────────────────────────────────────────
+    // Returns distinct categories with video count, sorted by count desc
+    fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const agg = await Video.aggregate([
+                { $group: { _id: "$category", count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $project: { _id: 0, value: "$_id", count: 1 } },
+            ]);
 
-// ── GET /api/categories ───────────────────────────────────────────────
-// Returns distinct categories with video count, sorted by count desc
-router.get("/", async (_req: Request, res: Response) => {
-    try {
-        const agg = await Video.aggregate([
-            { $group: { _id: "$category", count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-            { $project: { _id: 0, value: "$_id", count: 1 } },
-        ]);
+            return { data: agg, error: null };
+        } catch (err) {
+            reply.code(500);
+            return { data: [], error: String(err) };
+        }
+    });
+}
 
-        res.json({ data: agg, error: null });
-    } catch (err) {
-        res.status(500).json({ data: [], error: String(err) });
-    }
-});
-
-export default router;
+export default categoryRoutes;
