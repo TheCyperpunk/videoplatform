@@ -7,7 +7,7 @@ class ApiJavService {
   async searchVideos(searchParams: ApiJavSearchParams = {}): Promise<ApiJavVideoData[]> {
     try {
       // Enhanced: Fetch multiple pages with higher per_page limit
-      const maxPages = 3; // Fetch 3 pages for more comprehensive results
+      const maxPages = searchParams.maxPages || 3; // Allow override, default 3 pages
       const perPage = 100; // Increased from 20 to 100 (API supports up to 100)
       const allVideos: ApiJavVideoData[] = [];
 
@@ -64,11 +64,6 @@ class ApiJavService {
         allVideos.push(...pageVideos);
         
         console.log(`APIJAV page ${page}: ${pageVideos.length} videos (total: ${allVideos.length})`);
-
-        // Add delay between requests to avoid rate limiting
-        if (page < maxPages) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
 
         // Stop if we got fewer results than expected (end of results)
         if (pageVideos.length < perPage) {
@@ -160,7 +155,8 @@ class ApiJavService {
       page,
       orderby: 'date',
       order: 'DESC',
-      per_page: 20
+      per_page: 20,
+      maxPages: 3 // Fetch up to 300 videos (3 pages × 100 per page)
     });
   }
 

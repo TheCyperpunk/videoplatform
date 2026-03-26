@@ -368,6 +368,71 @@ fastify.get('/api/hentaiocean/video/:slug', async (request: FastifyRequest, repl
     }
 });
 
+// ===== CATEGORY-SPECIFIC SEARCH ENDPOINT =====
+fastify.get('/api/external/category/:category', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+        const params = request.params as any;
+        const query = request.query as any;
+        const category = params.category as string;
+        const page = query.page ? parseInt(query.page as string) : 1;
+        
+        // Map category to sources
+        let sources: string[] = [];
+        if (category === 'jav' || category === 'javfetch') {
+            sources = ['apijav'];
+        } else if (category === 'hentai') {
+            sources = ['hentaiocean', 'haniapi'];
+        } else {
+            reply.code(400);
+            return { success: false, error: 'Invalid category' };
+        }
+
+        const results: any = {};
+
+        // Fetch from all sources in parallel
+        const fetchPromises = sources.map(async (source) => {
+            try {
+                switch (source.toLowerCase()) {
+                    case 'apijav':
+                        return { source: 'apijav', data: await apijavService.searchVideos({ page, maxPages: 3 }) };
+                    case 'haniapi':
+                        return { source: 'haniapi', data: await haniApiService.getNewestVideos(page - 1) };
+                    case 'hentaiocean':
+                        return { source: 'hentaiocean', data: await hentaioceanService.getLatestVideos(page) };
+                    default:
+                        return { source, data: [] };
+                }
+            } catch (error) {
+                console.error(`Error fetching ${source}:`, error);
+                return { source, data: [] };
+            }
+        });
+
+        const fetchResults = await Promise.all(fetchPromises);
+        
+        // Organize results by source
+        fetchResults.forEach(result => {
+            results[result.source] = result.data;
+        });
+
+        // Calculate total count
+        const totalCount = Object.values(results).reduce((sum: number, videos: any) => sum + videos.length, 0);
+
+        return { 
+            success: true, 
+            data: results, 
+            totalCount,
+            category,
+            page,
+            sources: sources
+        };
+    } catch (error: any) {
+        console.error('Category search error:', error);
+        reply.code(500);
+        return { success: false, error: error.message };
+    }
+});
+
 // ===== UNIFIED SEARCH ENDPOINT =====
 fastify.get('/api/external/search', async (request: FastifyRequest, reply: FastifyReply) => {
     try {

@@ -42,6 +42,7 @@ export interface ApiJavSearchParams {
   orderby?: 'date' | 'title' | 'views'; // Default 'date'
   order?: 'ASC' | 'DESC'; // Default 'DESC'
   after?: string; // ISO 8601 date
+  maxPages?: number; // Max pages to fetch (for category browsing)
 }
 
 // Simplified video data for frontend
