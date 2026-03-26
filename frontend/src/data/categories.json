@@ -102,5 +102,21 @@
         "color": "#F97316",
         "description": "F1, football, compilations",
         "count": 1
+    },
+    {
+        "id": "jav",
+        "name": "Jav",
+        "icon": "Heart",
+        "color": "#F472B6",
+        "description": "Japanese adult videos",
+        "count": 0
+    },
+    {
+        "id": "hentai",
+        "name": "Hentai",
+        "icon": "Image",
+        "color": "#9333EA",
+        "description": "Animated adult",
+        "count": 0
     }
 ]

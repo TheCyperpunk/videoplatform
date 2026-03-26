@@ -1,6 +1,6 @@
 import type { Video } from "@/types/video";
 import type { Category } from "@/types/category";
-import type { QualityFilter } from "@/types/filters";
+import type { QualityFilter, SortOption } from "@/types/filters";
 import videosData from "@/data/videos.json";
 import categoriesData from "@/data/categories.json";
 import { parseDuration } from "./utils";

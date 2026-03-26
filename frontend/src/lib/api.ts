@@ -1,6 +1,6 @@
 import type { Video } from "@/types/video";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 export interface VideosResponse {
     data: Video[];
@@ -217,6 +217,100 @@ export async function fetchCategories(): Promise<{ data: CategoryItem[]; error: 
     return res.json();
 }
 
+// ── Fetch adult category (jav / hentai) from external APIs + local DB ────────
+// Sources used for jav: redtube, apijav, eporner, faphouse
+// Sources used for hentai: hentaiocean, haniapi
+export async function fetchAdultCategory(
+    category: "jav" | "hentai",
+    page: number = 1,
+    limit: number = 120
+): Promise<{ data: Video[]; total: number; error: string | null }> {
+    const isJav     = category === "jav";
+    const keyword   = isJav ? "jav" : "hentai";
+    const sources   = isJav
+        ? ["redtube", "apijav", "eporner", "faphouse"]
+        : ["hentaiocean", "haniapi"];
+
+    try {
+        // Run local DB fetch + external API search in parallel
+        const [localRes, extRes] = await Promise.allSettled([
+            // Local DB — try to find videos tagged as this category
+            fetch(
+                `${BASE_URL}/api/videos?category=${category}&page=${page}&limit=${limit}`,
+                { cache: "no-store" }
+            ).then((r) => (r.ok ? r.json() : { data: [], total: 0 })),
+            // External APIs — fetch from category endpoint for maximum results
+            fetch(
+                `${BASE_URL}/api/external/category/${category}?page=${page}`,
+                { cache: "no-store" }
+            ).then((r) => (r.ok ? r.json() : { data: {}, totalCount: 0 })),
+        ]);
+
+        const localVideos: Video[] =
+            localRes.status === "fulfilled" ? localRes.value.data ?? [] : [];
+        const localTotal: number =
+            localRes.status === "fulfilled" ? localRes.value.total ?? 0 : 0;
+
+        let externalVideos: Video[] = [];
+        let externalTotal = 0;
+
+        if (extRes.status === "fulfilled") {
+            const extData = extRes.value?.data ?? {};
+            externalTotal = extRes.value?.totalCount ?? 0;
+
+            for (const [source, videos] of Object.entries(extData)) {
+                if (!Array.isArray(videos)) continue;
+                for (const v of videos) {
+                    const vid = v as any;
+                    externalVideos.push({
+                        id: `${source}_${vid.id}_${Date.now()}_${Math.random()}`,
+                        title: vid.title ?? "Untitled",
+                        thumbnail:
+                            vid.thumbnail ??
+                            `https://via.placeholder.com/640x360/1a1a1a/666666?text=${source.toUpperCase()}`,
+                        duration: vid.duration ?? "0:00",
+                        views: vid.views ?? 0,
+                        likes: 0,
+                        publishedAt: new Date().toISOString(),
+                        channel: {
+                            name:
+                                source === "apijav"    ? "APIJAV"       :
+                                source === "eporner"   ? "Eporner"      :
+                                source === "faphouse"  ? "FapHouse"     :
+                                source === "redtube"   ? "RedTube"      :
+                                source === "hentaiocean" ? "HentaiOcean" :
+                                source === "haniapi"   ? "HaniAPI"      :
+                                source.toUpperCase(),
+                            avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${source}`,
+                            subscribers: 0,
+                            verified: true,
+                        },
+                        category,
+                        tags: [category],
+                        description: `External video from ${source.toUpperCase()}`,
+                        quality: "720p",
+                        trending_rank: null,
+                        source_url: vid.url ?? vid.embedUrl ?? "#",
+                        scraped_at: new Date().toISOString(),
+                        source,
+                    });
+                }
+            }
+        }
+
+        // Merge local first, then external; shuffle the external slice
+        const merged = [...localVideos, ...shuffleArray(externalVideos)];
+
+        return {
+            data: merged,
+            total: localTotal + externalTotal,
+            error: null,
+        };
+    } catch (err) {
+        return { data: [], total: 0, error: String(err) };
+    }
+}
+
 // ── External APIs Integration ────────────────────────────────────────────────
 export interface ExternalSearchResponse {
     success: boolean;
@@ -325,11 +419,18 @@ export async function searchCombined(
     limit: number = 120
 ): Promise<CombinedSearchResponse> {
     try {
+        // Add timeout to external API calls (15 seconds max - increased from 5s)
+        const externalPromise = Promise.race([
+            searchExternalAPIs(query, 1),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('External API timeout')), 15000)
+            )
+        ]);
+
         // Search both local and external APIs in parallel
         const [localResponse, externalResponse] = await Promise.allSettled([
             searchVideos(query, category, sort, page, limit),
-            // Reduce external API calls for faster loading - only fetch 1 page instead of multiple
-            searchExternalAPIs(query, 1) // Always page 1 for speed
+            externalPromise
         ]);
 
         const localVideos = localResponse.status === 'fulfilled' ? localResponse.value.data : [];
@@ -337,53 +438,63 @@ export async function searchCombined(
         
         let externalVideos: Video[] = [];
         let externalTotal = 0;
+        let externalError = '';
         
         if (externalResponse.status === 'fulfilled') {
-            const extData = externalResponse.value.data;
-            
-            // Transform all external videos to Video interface
-            const transformedVideos: Video[] = [];
-            
-            // Transform RedTube videos
-            extData.redtube?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'redtube'));
-            });
-            
-            // Transform APIJAV videos
-            extData.apijav?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'apijav'));
-            });
-            
-            // Transform Eporner videos
-            extData.eporner?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'eporner'));
-            });
-            
-            // Transform FapHouse videos
-            extData.faphouse?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'faphouse'));
-            });
-            
-            // Transform HaniAPI videos
-            extData.haniapi?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'haniapi'));
-            });
-            
-            // Transform Hentai Ocean videos
-            extData.hentaiocean?.forEach((video: any) => {
-                transformedVideos.push(transformExternalToVideo(video, 'hentaiocean'));
-            });
-            
-            externalVideos = transformedVideos;
-            externalTotal = externalResponse.value.totalCount;
+            try {
+                const extData = (externalResponse.value as ExternalSearchResponse).data;
+                
+                // Transform all external videos to Video interface
+                const transformedVideos: Video[] = [];
+                
+                // Transform RedTube videos
+                extData.redtube?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'redtube'));
+                });
+                
+                // Transform APIJAV videos
+                extData.apijav?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'apijav'));
+                });
+                
+                // Transform Eporner videos
+                extData.eporner?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'eporner'));
+                });
+                
+                // Transform FapHouse videos
+                extData.faphouse?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'faphouse'));
+                });
+                
+                // Transform HaniAPI videos
+                extData.haniapi?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'haniapi'));
+                });
+                
+                // Transform Hentai Ocean videos
+                extData.hentaiocean?.forEach((video: any) => {
+                    transformedVideos.push(transformExternalToVideo(video, 'hentaiocean'));
+                });
+                
+                externalVideos = transformedVideos;
+                externalTotal = (externalResponse.value as ExternalSearchResponse).totalCount;
+                
+                console.log(`✅ External search: ${externalVideos.length} videos found`);
+            } catch (transformError) {
+                console.error('Error transforming external videos:', transformError);
+                externalError = 'Error processing external results';
+            }
+        } else if (externalResponse.status === 'rejected') {
+            console.warn('⚠️ External API failed:', externalResponse.reason);
+            externalError = `External APIs unavailable: ${externalResponse.reason?.message || 'Unknown error'}`;
         }
 
         // Combine and shuffle all videos together for a mixed feed
         const allVideos = [...localVideos, ...externalVideos];
-        console.log(`Before shuffle: Local=${localVideos.length}, External=${externalVideos.length}, Total=${allVideos.length}`);
+        console.log(`📊 Search results: Local=${localVideos.length}, External=${externalVideos.length}, Total=${allVideos.length}`);
         
         const shuffledVideos = shuffleArray(allVideos);
-        console.log(`After shuffle: First 5 video sources:`, shuffledVideos.slice(0, 5).map(v => v.source || 'local'));
 
         return {
             localVideos: shuffledVideos, // Return shuffled combined results in localVideos
@@ -393,10 +504,10 @@ export async function searchCombined(
             totalCount: localTotal + externalTotal,
             query,
             page,
-            error: null
+            error: externalError || null
         };
     } catch (error) {
-        console.error('Combined search error:', error);
+        console.error('❌ Combined search error:', error);
         
         // Fallback to local search only
         try {

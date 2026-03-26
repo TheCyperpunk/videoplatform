@@ -69,14 +69,22 @@ export function Navbar() {
         }
     };
 
-    // Build nav links injecting real categories
+    // Build nav links injecting real categories + always ensure jav/hentai exist
     const categoriesDropdown = {
         label: "Categories",
         hasDropdown: true,
-        dropdownItems: categories.map((cat) => ({
-            label: formatLabel(cat.value),
-            href:  `/explore?category=${cat.value}`,
-        })),
+        dropdownItems: [
+            ...categories.map((cat) => ({
+                label: formatLabel(cat.value),
+                href: `/explore?category=${cat.value}`,
+            })),
+            ...["jav", "hentai"]
+                .filter((c) => !categories.some((cat) => cat.value === c))
+                .map((c) => ({
+                    label: formatLabel(c),
+                    href: `/explore?category=${c}`,
+                })),
+        ],
     };
 
     const navLinks = [

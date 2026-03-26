@@ -15,6 +15,7 @@ interface AppState extends FilterState {
 
 const defaultFilters: FilterState = {
     category: "all",
+    sort: "date",
     quality: "all",
     viewMode: "grid",
     searchQuery: "",

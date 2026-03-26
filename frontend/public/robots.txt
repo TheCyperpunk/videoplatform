@@ -1,0 +1,44 @@
+# Robots.txt for Videx Video Platform
+# Allow all bots to crawl the site
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /.next/
+Disallow: /node_modules/
+Disallow: /_next/
+Disallow: /private/
+
+# Specific rules for Googlebot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Specific rules for Yandex
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 1
+
+# Specific rules for Baidu
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap locations
+Sitemap: https://videx.com/sitemap.xml
+Sitemap: https://videx.com/sitemap-videos.xml
