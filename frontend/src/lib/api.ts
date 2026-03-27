@@ -419,11 +419,11 @@ export async function searchCombined(
     limit: number = 120
 ): Promise<CombinedSearchResponse> {
     try {
-        // Add timeout to external API calls (15 seconds max - increased from 5s)
+        // Add timeout to external API calls (30 seconds max - increased for reliability)
         const externalPromise = Promise.race([
             searchExternalAPIs(query, 1),
             new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('External API timeout')), 15000)
+                setTimeout(() => reject(new Error('External API timeout')), 30000)
             )
         ]);
 

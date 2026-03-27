@@ -61,7 +61,7 @@ class HentaiOceanService {
     try {
       console.log(`HentaiOcean: fetching RSS feed (page ${page}, perPage ${perPage})`);
       const response = await axios.get<string>(this.rssUrl, {
-        timeout: 15000,
+        timeout: 30000, // Increased to 30s for reliability
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)' },
         responseType: 'text',
       });
@@ -144,7 +144,7 @@ class HentaiOceanService {
     try {
       console.log(`HentaiOcean: searching RSS feed for "${query}"`);
       const response = await axios.get<string>(this.rssUrl, {
-        timeout: 15000,
+        timeout: 30000, // Increased to 30s for reliability
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)' },
         responseType: 'text',
       });
@@ -194,7 +194,7 @@ class HentaiOceanService {
     const searchUrl = `${this.baseUrl}/`;
     const response = await axios.get<string>(searchUrl, {
       params: { s: query, paged: page },
-      timeout: 15000,
+      timeout: 30000, // Increased to 30s for reliability
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml',

@@ -48,7 +48,7 @@ class ApiJavService {
         
         const response = await axios.get<ApiJavVideo[]>(`${this.baseUrl}/posts`, {
           params,
-          timeout: 15000,
+          timeout: 30000, // Increased to 30s for reliability
           headers: {
             'Accept': 'application/json',
             'X-Client-Site': 'https://localhost:3000' // Optional client identification
@@ -89,7 +89,7 @@ class ApiJavService {
       console.log(`Fetching APIJAV video by ID: ${id}`);
       
       const response = await axios.get<ApiJavVideo>(`${this.baseUrl}/posts/${id}`, {
-        timeout: 15000,
+        timeout: 30000, // Increased to 30s for reliability
         headers: {
           'Accept': 'application/json',
           'X-Client-Site': 'https://localhost:3000'
@@ -117,7 +117,7 @@ class ApiJavService {
       console.log(`Fetching APIJAV player info for ID: ${id}`);
       
       const response = await axios.get<ApiJavPlayer>(`${this.baseUrl}/player/${id}`, {
-        timeout: 15000,
+        timeout: 30000, // Increased to 30s for reliability
         headers: {
           'Accept': 'application/json',
           'X-Client-Site': 'https://localhost:3000'
