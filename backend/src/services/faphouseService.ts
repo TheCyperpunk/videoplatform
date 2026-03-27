@@ -215,7 +215,7 @@ class FapHouseService {
       console.log(`Scraping videos from: ${url}`);
       const response = await axios.get(url, { 
         headers: this.headers, 
-        timeout: 15000,
+        timeout: 30000, // Increased to 30s for reliability
         validateStatus: (status) => status < 500 // Accept 4xx errors but not 5xx
       });
       

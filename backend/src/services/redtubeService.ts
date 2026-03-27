@@ -42,7 +42,7 @@ class RedTubeService {
         
         const response = await axios.get<RedTubeApiResponse>(this.baseUrl, {
           params,
-          timeout: 15000
+          timeout: 30000 // Increased to 30s for reliability
         });
 
         if (!response.data || !response.data.videos) {

@@ -31,9 +31,12 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.pornhub.com" },
       { protocol: "https", hostname: "*.xhamster.com" },
       { protocol: "https", hostname: "*.cdninstagram.com" },
-      // Allow any http(s) hostname as a catch-all fallback
-      { protocol: "http", hostname: "**" },
-      { protocol: "https", hostname: "**" },
+      // Additional fallback image sources
+      { protocol: "https", hostname: "encrypted-tbn0.gstatic.com" },
+      { protocol: "https", hostname: "m3.imgdf.shop" },
+      { protocol: "https", hostname: "imggen.eporner.com" },
+      { protocol: "https", hostname: "masafun.io.in" },
+      { protocol: "https", hostname: "area51.porn" },
     ],
   },
   experimental: {

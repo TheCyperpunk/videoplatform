@@ -125,7 +125,7 @@ class HaniApiService {
             `${this.baseUrl}/search`,
             { search: search.trim(), tags, brands, blacklist, order_by, ordering, page: p },
             {
-              timeout: 15000,
+              timeout: 30000, // Increased to 30s for reliability
               headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)',
