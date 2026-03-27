@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import escapeStringRegexp from "escape-string-regexp";
 import Video from "../models/Video";
 
 async function searchRoutes(fastify: FastifyInstance) {
@@ -6,22 +7,26 @@ async function searchRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             const query = request.query as any;
-            const q        = ((query.q as string) || "").trim();
+            const q        = ((query.q as string) || "").trim().slice(0, 100); // Limit to 100 chars
             const category = (query.category as string) || "";
             const sort     = (query.sort as string) || "date";
             const page     = Math.max(1, parseInt(query.page as string) || 1);
             const limit    = Math.min(200, Math.max(1, parseInt(query.limit as string) || 120));
 
-            if (!q) {
+            // Reject queries that are too short
+            if (!q || q.length < 2) {
                 return { data: [], total: 0, page, limit, hasMore: false, query: q, error: null };
             }
 
+            // Escape regex special characters to prevent ReDoS attacks
+            const safeQ = escapeStringRegexp(q);
+
             const filter: Record<string, unknown> = {
                 $or: [
-                    { title:          { $regex: q, $options: "i" } },
-                    { description:    { $regex: q, $options: "i" } },
-                    { tags:           { $elemMatch: { $regex: q, $options: "i" } } },
-                    { "channel.name": { $regex: q, $options: "i" } },
+                    { title:          { $regex: safeQ, $options: "i" } },
+                    { description:    { $regex: safeQ, $options: "i" } },
+                    { tags:           { $elemMatch: { $regex: safeQ, $options: "i" } } },
+                    { "channel.name": { $regex: safeQ, $options: "i" } },
                 ],
             };
 
@@ -76,8 +81,9 @@ async function searchRoutes(fastify: FastifyInstance) {
                 error: null,
             };
         } catch (err) {
+            fastify.log.error(err); // Log internally only
             reply.code(500);
-            return { data: [], total: 0, page: 1, limit: 120, hasMore: false, query: "", error: String(err) };
+            return { data: [], total: 0, page: 1, limit: 120, hasMore: false, query: "", error: "Internal server error" };
         }
     });
 }
