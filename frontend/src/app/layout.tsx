@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   creator: "Videx",
   publisher: "Videx",
   keywords: ["videos", "streaming", "video discovery", "explore", "trending"],
+  other: {
+    "RATING": "RTA-5042-1996-1400-1577-RTA",
+  },
   openGraph: {
     title: "Videx – Stream. Discover. Explore.",
     description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Videx.",
@@ -94,6 +97,8 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#0A0A0A" />
+        {/* RTA Label - Restricted To Adults */}
+        <meta name="RATING" content="RTA-5042-1996-1400-1577-RTA" />
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
