@@ -88,7 +88,7 @@ export function AgeVerificationModal() {
                         <span className="block text-[17px] font-bold mt-0.5">ENTER</span>
                     </button>
                     <p className="mt-4 text-neutral-400 text-[12px]">
-                        When accessing this site you agree to <Link href="#" className="text-[#c18621] hover:underline">our terms of use</Link>.
+                        When accessing this site you agree to <Link href="/terms" className="text-[#c18621] hover:underline">our terms of use</Link>.
                     </p>
                 </div>
             </div>
