@@ -1,0 +1,247 @@
+# ============================================
+# Kubernetes Deployment Manifests
+# For production-grade orchestration
+# ============================================
+
+---
+# Backend API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videx-api
+  namespace: videx
+  labels:
+    app: videx-api
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: videx-api
+  template:
+    metadata:
+      labels:
+        app: videx-api
+        tier: backend
+    spec:
+      containers:
+      - name: api
+        image: videx-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5002
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "5002"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: videx-secrets
+              key: mongodb-uri
+        - name: FRONTEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: videx-config
+              key: frontend-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 5002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      restartPolicy: Always
+
+---
+# Backend API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: videx-api-service
+  namespace: videx
+  labels:
+    app: videx-api
+spec:
+  type: ClusterIP
+  selector:
+    app: videx-api
+  ports:
+  - port: 5002
+    targetPort: 5002
+    protocol: TCP
+    name: http
+
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videx-frontend
+  namespace: videx
+  labels:
+    app: videx-frontend
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: videx-frontend
+  template:
+    metadata:
+      labels:
+        app: videx-frontend
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: videx-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: NEXT_PUBLIC_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: videx-config
+              key: api-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      restartPolicy: Always
+
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: videx-frontend-service
+  namespace: videx
+  labels:
+    app: videx-frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: videx-frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+
+---
+# Horizontal Pod Autoscaler for API
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: videx-api-hpa
+  namespace: videx
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: videx-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Horizontal Pod Autoscaler for Frontend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: videx-frontend-hpa
+  namespace: videx
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: videx-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: videx-config
+  namespace: videx
+data:
+  frontend-url: "https://yourdomain.com"
+  api-url: "https://api.yourdomain.com"
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: videx
+  labels:
+    name: videx

@@ -1,0 +1,45 @@
+# ============================================
+# Kubernetes Ingress for HTTPS/SSL
+# Requires cert-manager for automatic SSL
+# ============================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: videx-ingress
+  namespace: videx
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+  - hosts:
+    - yourdomain.com
+    - api.yourdomain.com
+    secretName: videx-tls
+  rules:
+  # Frontend
+  - host: yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: videx-frontend-service
+            port:
+              number: 80
+  # Backend API
+  - host: api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: videx-api-service
+            port:
+              number: 5002
