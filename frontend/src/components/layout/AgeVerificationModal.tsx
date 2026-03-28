@@ -9,7 +9,7 @@ export function AgeVerificationModal() {
 
     useEffect(() => {
         setIsMounted(true);
-        const verified = localStorage.getItem("videx_age_verified");
+        const verified = sessionStorage.getItem("videx_age_verified");
         if (!verified) {
             // Slight delay so the transition feels smooth / blocks UI after paint
             setIsOpen(true);
@@ -18,7 +18,7 @@ export function AgeVerificationModal() {
     }, []);
 
     const handleAccept = () => {
-        localStorage.setItem("videx_age_verified", "true");
+        sessionStorage.setItem("videx_age_verified", "true");
         setIsOpen(false);
         document.body.style.overflow = "auto";
     };
