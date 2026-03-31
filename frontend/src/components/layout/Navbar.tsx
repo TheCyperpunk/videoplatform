@@ -50,6 +50,11 @@ export function Navbar() {
         return () => window.removeEventListener("click", handleClickOutside);
     }, []);
 
+    // Hide navbar on /terms, /contact, /privacy, and /dmca pages
+    if (pathname === "/terms" || pathname === "/contact" || pathname === "/privacy" || pathname === "/dmca") {
+        return null;
+    }
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
     };
@@ -101,8 +106,11 @@ export function Navbar() {
 
                 {/* Logo */}
                 <Link href="/" className="flex items-center no-underline shrink-0 min-w-[100px]">
-                    <span className="text-2xl font-black tracking-tight text-white">Vid</span>
-                    <span className="text-2xl font-black tracking-tight text-[#F5A200]">ex</span>
+                    <img 
+                        src="/large-Photoroom.png" 
+                        alt="Desimallu" 
+                        className="h-5 sm:h-6 md:h-6.5 lg:h-7 w-auto"
+                    />
                 </Link>
 
                 {/* Search bar */}

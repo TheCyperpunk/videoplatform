@@ -14,7 +14,8 @@ const FALLBACK_THUMBNAILS = [
     "https://imggen.eporner.com/14096844/1920/1080/5.jpg",
     "https://imggen.eporner.com/14978187/1920/1080/11.jpg",
     "https://masafun.io.in/wp-content/uploads/2026/03/Mallu-Reshma-Rechu-First-Ever.jpg",
-    "https://area51.porn/contents/videos_screenshots/90000/90633/preview.jpg"
+    "https://area51.porn/contents/videos_screenshots/90000/90633/preview.jpg",
+    "https://i.ibb.co/N2XyNYf/Raseela%20Honeymoon%20Neonx%20Porn%2032.jpg" 
 ];
 
 function getFallback(video: Video): string {

@@ -1,45 +1,46 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/layout/Providers";
 import { SearchProvider } from "@/context/SearchContext";
-import { AgeVerificationModal } from "@/components/layout/AgeVerificationModal";
+import { AgeVerificationWrapper } from "@/components/layout/AgeVerificationWrapper";
 
 const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://videx.com";
 
 export const metadata: Metadata = {
-  title: "Videx – Stream. Discover. Explore.",
-  description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Videx.",
-  authors: [{ name: "Videx Team" }],
-  creator: "Videx",
-  publisher: "Videx",
+  title: "Desimallu – Stream. Discover. Explore.",
+  description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Desimallu.",
+  authors: [{ name: "Desimallu Team" }],
+  creator: "Desimallu",
+  publisher: "Desimallu",
   keywords: ["videos", "streaming", "video discovery", "explore", "trending"],
   other: {
     "RATING": "RTA-5042-1996-1400-1577-RTA",
   },
   openGraph: {
-    title: "Videx – Stream. Discover. Explore.",
-    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Videx.",
+    title: "Desimallu – Stream. Discover. Explore.",
+    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Desimallu.",
     type: "website",
     url: baseUrl,
-    siteName: "Videx",
+    siteName: "Desimallu",
     locale: "en_US",
     images: [
       {
         url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "Videx Video Platform",
+        alt: "Desimallu Video Platform",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Videx – Stream. Discover. Explore.",
-    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Videx.",
+    title: "Desimallu – Stream. Discover. Explore.",
+    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Desimallu.",
     images: [`${baseUrl}/twitter-image.png`],
-    creator: "@videx",
+    creator: "@desimallu",
   },
   alternates: {
     canonical: baseUrl,
@@ -68,10 +69,10 @@ export default function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Videx",
+    name: "Desimallu",
     url: baseUrl,
     logo: `${baseUrl}/logo.png`,
-    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Videx.",
+    description: "A modern video discovery platform. Find trending, browse categories, and explore videos on Desimallu.",
     sameAs: [
       "https://twitter.com/videx",
       "https://facebook.com/videx",
@@ -109,14 +110,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(searchActionSchema) }}
         />
       </head>
-      <body className="bg-[#0A0A0A] text-white min-h-screen antialiased">
+      <body className="bg-[#0A0A0A] text-white min-h-screen antialiased flex flex-col">
         <Providers>
           <SearchProvider>
-            <AgeVerificationModal />
+            <AgeVerificationWrapper />
             <Navbar />
-            <main>
+            <main className="flex-1">
               {children}
             </main>
+            <Footer />
           </SearchProvider>
         </Providers>
       </body>

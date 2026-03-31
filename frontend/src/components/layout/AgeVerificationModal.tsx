@@ -1,29 +1,52 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 export function AgeVerificationModal() {
     const [isOpen, setIsOpen] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
-        setIsMounted(true);
-        const verified = sessionStorage.getItem("videx_age_verified");
-        if (!verified) {
-            // Slight delay so the transition feels smooth / blocks UI after paint
-            setIsOpen(true);
-            document.body.style.overflow = "hidden"; // Prevent scrolling
+        // Policy pages where modal should not show
+        const policyPages = ["/terms", "/contact", "/privacy", "/dmca"];
+        const isPolicyPage = policyPages.includes(pathname);
+        
+        if (isPolicyPage) {
+            setIsOpen(false);
+            document.body.style.overflow = "auto";
+            return;
         }
-    }, []);
+
+        // Check verification status
+        let verified = false;
+        try {
+            verified = sessionStorage.getItem("videx_age_verified") === "true";
+        } catch (e) {
+            // If sessionStorage fails, don't show modal
+            verified = true;
+        }
+
+        setIsOpen(!verified);
+        document.body.style.overflow = verified ? "auto" : "hidden";
+
+        // Cleanup
+        return () => {
+            document.body.style.overflow = "auto";
+        };
+    }, [pathname]);
 
     const handleAccept = () => {
-        sessionStorage.setItem("videx_age_verified", "true");
+        try {
+            sessionStorage.setItem("videx_age_verified", "true");
+        } catch (e) {
+            console.error("Failed to save verification:", e);
+        }
         setIsOpen(false);
         document.body.style.overflow = "auto";
     };
 
-    if (!isMounted) return null;
     if (!isOpen) return null;
 
     return (
@@ -36,7 +59,7 @@ export function AgeVerificationModal() {
                         18+
                     </div>
                     <h1 className="text-2xl font-bold text-white leading-tight">
-                        Videx is an ADULTS ONLY website!
+                        Desimallu is an ADULTS ONLY website!
                     </h1>
                 </div>
 
@@ -88,7 +111,7 @@ export function AgeVerificationModal() {
                         <span className="block text-[17px] font-bold mt-0.5">ENTER</span>
                     </button>
                     <p className="mt-4 text-neutral-400 text-[12px]">
-                        When accessing this site you agree to <Link href="/terms" className="text-[#c18621] hover:underline">our terms of use</Link>.
+                        When accessing this site you agree to <Link href="/terms?from=modal" target="_blank" rel="noopener noreferrer" className="text-[#c18621] hover:underline">our terms of use</Link>.
                     </p>
                 </div>
             </div>

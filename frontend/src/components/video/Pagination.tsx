@@ -29,7 +29,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, disabled = f
     const pages = getPages();
 
     const baseBtn = cn(
-        "inline-flex items-center justify-center w-[42px] h-[44px] rounded-[10px]",
+        "inline-flex items-center justify-center w-[36px] h-[38px] rounded-[8px]",
         "font-bold cursor-pointer select-none transition-all duration-150",
         "disabled:opacity-30 disabled:cursor-not-allowed"
     );
@@ -46,7 +46,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, disabled = f
                 disabled={disabled || currentPage === 1}
                 aria-label="Previous page"
             >
-                <ChevronLeft className="w-5 h-5" strokeWidth={2.5} />
+                <ChevronLeft className="w-4 h-4" strokeWidth={2.5} />
             </button>
 
             {/* Page numbers */}
@@ -55,7 +55,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, disabled = f
                     key={p}
                     className={cn(
                         baseBtn,
-                        "text-[15px]",
+                        "text-[14px]",
                         p === currentPage
                             ? "bg-[#f8f9fa] text-[#141517] cursor-default shadow-sm"
                             : "bg-[#1a1b1e] text-[#909296] hover:bg-[#25262b] hover:text-white"
@@ -76,7 +76,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, disabled = f
                 disabled={disabled || currentPage === totalPages}
                 aria-label="Next page"
             >
-                <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
+                <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
             </button>
         </nav>
     );
