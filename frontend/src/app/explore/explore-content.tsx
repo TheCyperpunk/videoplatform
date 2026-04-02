@@ -6,6 +6,7 @@ import { LiveVideoGrid } from "@/components/video/LiveVideoGrid";
 import { SkeletonVideoGrid } from "@/components/video/SkeletonVideoGrid";
 import { Pagination } from "@/components/video/Pagination";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { RotatingLeaderboard } from "@/components/ads/RotatingLeaderboard";
 import { useSearch } from "@/context/SearchContext";
 import { fetchVideos, searchCombined, fetchCategories } from "@/lib/api";
 import type { Video } from "@/types/video";
@@ -16,7 +17,7 @@ function ExploreContent() {
   const searchParams  = useSearchParams();
   const router        = useRouter();
   const pathname      = usePathname();
-  const { activeQuery } = useSearch();
+  const { activeQuery, clearSearch } = useSearch();
 
   // Read URL state - now including sort param
   const pageParam     = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -55,31 +56,39 @@ function ExploreContent() {
       setLoading(true);
     }
     setError(null);
+    
+    console.log('🔍 Loading videos with params:', { page, query, sort, category, isPagination });
+    
     try {
       if (query.trim()) {
+        console.log('📝 Searching with query:', query);
         const res = await searchCombined(query, category || undefined, sort, page, VIDEOS_PER_PAGE);
         setVideos(res.localVideos);
         setTotal(res.totalCount);
         if (res.error) setError(res.error);
       } else if (category === "jav" || category === "hentai") {
+        console.log('🔞 Fetching adult category:', category);
         const { fetchAdultCategory } = await import("@/lib/api");
         const res = await fetchAdultCategory(category as "jav" | "hentai", page, VIDEOS_PER_PAGE);
         setVideos(res.data);
         setTotal(res.total);
         if (res.error) setError(res.error);
       } else if (category === "webseries") {
+        console.log('📺 Fetching webseries');
         const res = await fetchVideos({ page, limit: VIDEOS_PER_PAGE, sort, category });
         const { shuffleArray } = await import("@/lib/api");
         setVideos(shuffleArray(res.data));
         setTotal(res.total);
       } else {
+        console.log('📹 Fetching regular videos with category:', category);
         const res = await fetchVideos({ page, limit: VIDEOS_PER_PAGE, sort, category: category || undefined });
+        console.log('📊 Regular videos response:', res);
         setVideos(res.data);
         setTotal(res.total);
       }
     } catch (err) {
       setError("Failed to load videos. Is the backend running on port 5002?");
-      console.error(err);
+      console.error('❌ Load videos error:', err);
       setVideos([]);
     } finally {
       if (isPagination) setPaginationLoading(false);
@@ -90,12 +99,28 @@ function ExploreContent() {
   // Sync URL → state when the URL params change (back/forward nav)
   useEffect(() => { setCurrentPage(pageParam); }, [pageParam]);
   useEffect(() => { setCurrentSort(sortParam); }, [sortParam]);
-  useEffect(() => { setCurrentCategory(categoryParam); }, [categoryParam]);
+  useEffect(() => { 
+    setCurrentCategory(categoryParam);
+    // Clear search when category is selected from URL
+    if (categoryParam && activeQuery) {
+      clearSearch();
+    }
+  }, [categoryParam, activeQuery]);
 
-  // Reset to page 1 when query or sort or category changes
+  // Clear category from URL when search becomes active
   useEffect(() => {
-    setCurrentPage(1);
-    updateUrl({ page: undefined });
+    if (activeQuery && categoryParam) {
+      // Navigate to clean explore page when searching
+      updateUrl({ category: undefined });
+    }
+  }, [activeQuery, categoryParam]);
+
+  // Reset to page 1 ONLY when query, sort, or category changes (not page)
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+      updateUrl({ page: undefined });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeQuery, currentSort, currentCategory]);
 
@@ -108,7 +133,8 @@ function ExploreContent() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateUrl({ page: String(page) });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Scroll to top instantly when changing pages
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const totalPages = Math.ceil(total / VIDEOS_PER_PAGE);
@@ -152,6 +178,27 @@ function ExploreContent() {
         </div>
       )}
 
+      {/* ── Sort result banner ── */}
+      {!isSearching && !currentCategory && !loading && !paginationLoading && (
+        <div className="px-4 pt-4 pb-1">
+          <p className="text-[#888] text-sm">
+            {total > 0 ? (
+              <>
+                <span className="text-white font-semibold">{total.toLocaleString()}</span> results for{" "}
+                <span className="text-[#F5A200]">
+                  "{currentSort === 'date' ? 'new videos' : 
+                    currentSort === 'views' ? 'popular videos' : 
+                    currentSort === 'likes' ? 'top rated videos' : 
+                    currentSort}"
+                </span>
+              </>
+            ) : (
+              <>No results found</>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* ── Error banner ── */}
       {error && !loading && !paginationLoading && (
         <div className="px-4 pt-2">
@@ -189,6 +236,11 @@ function ExploreContent() {
         </div>
       )}
 
+      {/* ── Bottom Leaderboard Ads ── */}
+      {!loading && !paginationLoading && videos.length > 0 && (
+        <RotatingLeaderboard position="bottom" />
+      )}
+
       {/* ── Pagination ── */}
       {!loading && !paginationLoading && totalPages > 1 && (
         <Pagination
@@ -197,6 +249,11 @@ function ExploreContent() {
           onPageChange={handlePageChange}
           disabled={false}
         />
+      )}
+
+      {/* ── Slim Banner Below Pagination ── */}
+      {!loading && !paginationLoading && (
+        <RotatingLeaderboard position="slim" />
       )}
     </div>
   );

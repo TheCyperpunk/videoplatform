@@ -29,7 +29,7 @@ const staticNavLinks = [
 ];
 
 export function Navbar() {
-    const { searchQuery, setSearchQuery, triggerSearch } = useSearch();
+    const { searchQuery, setSearchQuery, triggerSearch, clearSearch } = useSearch();
     const [searchFocused, setSearchFocused] = useState(false);
     const [openDropdown,  setOpenDropdown]  = useState<string | null>(null);
     const [categories,    setCategories]    = useState<CategoryItem[]>([]);
@@ -61,9 +61,8 @@ export function Navbar() {
 
     const handleSearchSubmit = () => {
         if (searchQuery.trim() !== "") {
-            if (pathname !== "/explore") {
-                router.push("/explore");
-            }
+            // Always navigate to clean explore page when searching
+            router.push("/explore");
             triggerSearch(); // Trigger the actual search
         }
     };
@@ -202,7 +201,14 @@ export function Navbar() {
                             <Link
                                 key={item.label}
                                 href={item.href}
-                                onClick={() => setOpenDropdown(null)}
+                                onClick={() => {
+                                    setOpenDropdown(null);
+                                    // Clear search when clicking category or Videos items
+                                    if (item.href.includes('category=') || activeLink.label === 'Videos') {
+                                        clearSearch();
+                                        setSearchQuery("");
+                                    }
+                                }}
                                 className="block px-4 py-2.5 text-[15px] font-medium text-white hover:bg-[#252525] transition-colors"
                             >
                                 {item.label}

@@ -7,6 +7,7 @@ interface SearchContextType {
     activeQuery: string; // The query that triggers actual search
     setSearchQuery: (query: string) => void;
     triggerSearch: () => void; // Manual search trigger
+    clearSearch: () => void; // Clear both search query and active query
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -19,12 +20,18 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         setActiveQuery(searchQuery); // Set active query to current input
     };
 
+    const clearSearch = () => {
+        setSearchQuery("");
+        setActiveQuery("");
+    };
+
     return (
         <SearchContext.Provider value={{ 
             searchQuery, 
             activeQuery, 
             setSearchQuery, 
-            triggerSearch 
+            triggerSearch,
+            clearSearch
         }}>
             {children}
         </SearchContext.Provider>

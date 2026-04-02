@@ -50,21 +50,21 @@ export function AgeVerificationModal() {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="relative w-full max-w-[540px] bg-[#0A0A0A] border border-neutral-800 rounded-lg shadow-2xl p-6 flex flex-col my-8 font-sans">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+            <div className="relative w-full max-w-[540px] bg-[#0A0A0A] border border-neutral-800 rounded-lg shadow-2xl p-4 sm:p-6 flex flex-col my-4 sm:my-8 font-sans mx-2 sm:mx-0">
                 
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-5">
-                    <div className="flex-shrink-0 w-[52px] h-[52px] bg-[#d32f2f] rounded-full flex items-center justify-center text-white font-extrabold text-xl shadow-lg">
+                <div className="flex items-start sm:items-center gap-3 mb-4 sm:mb-5">
+                    <div className="flex-shrink-0 w-[44px] h-[44px] sm:w-[52px] sm:h-[52px] bg-[#d32f2f] rounded-full flex items-center justify-center text-white font-extrabold text-lg sm:text-xl shadow-lg">
                         18+
                     </div>
-                    <h1 className="text-2xl font-bold text-white leading-tight">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
                         Desimallu is an ADULTS ONLY website!
                     </h1>
                 </div>
 
                 {/* Content */}
-                <div className="space-y-4 text-neutral-300 text-[13px] leading-[1.6]">
+                <div className="space-y-3 sm:space-y-4 text-neutral-300 text-xs sm:text-[13px] leading-[1.5] sm:leading-[1.6]">
                     <p>
                         You are about to enter a website that contains explicit material (pornography). 
                         This website should only be accessed if you are at least 18 years old or of legal 
@@ -91,7 +91,7 @@ export function AgeVerificationModal() {
                     </p>
 
                     <p className="pt-1">Other steps you can take to protect your children are:</p>
-                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <ul className="list-disc pl-4 sm:pl-5 mt-1 space-y-1">
                         <li>Use family filters of your operating systems and/or browsers;</li>
                         <li>
                             When using a search engine such as Google, Bing or Yahoo; check the safe 
@@ -102,15 +102,15 @@ export function AgeVerificationModal() {
                 </div>
 
                 {/* Button */}
-                <div className="mt-6 flex flex-col items-center">
+                <div className="mt-5 sm:mt-6 flex flex-col items-center">
                     <button 
                         onClick={handleAccept}
-                        className="w-full bg-[#008f39] hover:bg-[#00732e] text-white font-medium py-3 rounded transition-colors"
+                        className="w-full bg-[#008f39] hover:bg-[#00732e] text-white font-medium py-2.5 sm:py-3 rounded transition-colors"
                     >
-                        <span className="block text-[15px]">I am 18+</span>
-                        <span className="block text-[17px] font-bold mt-0.5">ENTER</span>
+                        <span className="block text-sm sm:text-[15px]">I am 18+</span>
+                        <span className="block text-base sm:text-[17px] font-bold mt-0.5">ENTER</span>
                     </button>
-                    <p className="mt-4 text-neutral-400 text-[12px]">
+                    <p className="mt-3 sm:mt-4 text-neutral-400 text-[11px] sm:text-[12px] text-center px-2 sm:text-left sm:px-0">
                         When accessing this site you agree to <Link href="/terms?from=modal" target="_blank" rel="noopener noreferrer" className="text-[#c18621] hover:underline">our terms of use</Link>.
                     </p>
                 </div>

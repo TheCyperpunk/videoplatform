@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useAdRedirect } from "@/components/ads/AdRedirectHandler";
 import type { Video } from "@/types/video";
 
 const FALLBACK_THUMBNAILS = [
@@ -36,13 +37,14 @@ export function LiveVideoCard({ video, className }: LiveVideoCardProps) {
     
     // Use the video's original thumbnail initially, or fallback if it's totally missing
     const [imgSrc, setImgSrc] = useState<string>(video.thumbnail || getFallback(video));
+    
+    // Use ad redirect system
+    const { handleVideoClick, clickCount, isAdPhase } = useAdRedirect(video.id, video.source_url || "#");
 
     return (
-        <a
-            href={video.source_url || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn("block no-underline group", className)}
+        <div
+            onClick={handleVideoClick}
+            className={cn("block no-underline group cursor-pointer", className)}
             aria-label={`Watch ${video.title}`}
         >
             {/* Thumbnail */}
@@ -86,6 +88,6 @@ export function LiveVideoCard({ video, className }: LiveVideoCardProps) {
             <h3 className="text-white text-base font-medium m-0 p-0 truncate leading-snug">
                 {video.title}
             </h3>
-        </a>
+        </div>
     );
 }

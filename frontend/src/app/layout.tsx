@@ -5,6 +5,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Providers } from "@/components/layout/Providers";
 import { SearchProvider } from "@/context/SearchContext";
 import { AgeVerificationWrapper } from "@/components/layout/AgeVerificationWrapper";
+import { PopupAd } from "@/components/ads/PopupAd";
+import { RotatingLeaderboard } from "@/components/ads/RotatingLeaderboard";
 
 const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://videx.com";
 
@@ -114,7 +116,9 @@ export default function RootLayout({
         <Providers>
           <SearchProvider>
             <AgeVerificationWrapper />
+            <PopupAd />
             <Navbar />
+            <RotatingLeaderboard />
             <main className="flex-1">
               {children}
             </main>
