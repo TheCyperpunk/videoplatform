@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -116,9 +117,13 @@ export default function RootLayout({
         <Providers>
           <SearchProvider>
             <AgeVerificationWrapper />
-            <PopupAd />
+            <Suspense fallback={null}>
+              <PopupAd />
+            </Suspense>
             <Navbar />
-            <RotatingLeaderboard />
+            <Suspense fallback={<div className="h-[90px]" />}>
+              <RotatingLeaderboard />
+            </Suspense>
             <main className="flex-1">
               {children}
             </main>

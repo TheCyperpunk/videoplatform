@@ -34,3 +34,8 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Data imports
+*.csv
+normalized_*.json
+
