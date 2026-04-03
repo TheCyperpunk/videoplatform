@@ -37,6 +37,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "imggen.eporner.com" },
       { protocol: "https", hostname: "masafun.io.in" },
       { protocol: "https", hostname: "area51.porn" },
+      { protocol: "https", hostname: "*.jilkatha.com" },
+      { protocol: "https", hostname: "jilkatha.com" },
     ],
   },
   experimental: {
