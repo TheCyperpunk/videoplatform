@@ -43,7 +43,7 @@ class ApiJavService {
                 console.log(`Fetching APIJAV videos page ${page} with params:`, params);
                 const response = await axios_1.default.get(`${this.baseUrl}/posts`, {
                     params,
-                    timeout: 15000,
+                    timeout: 30000, // Increased to 30s for reliability
                     headers: {
                         'Accept': 'application/json',
                         'X-Client-Site': 'https://localhost:3000' // Optional client identification
@@ -56,10 +56,6 @@ class ApiJavService {
                 const pageVideos = response.data.map((video) => this.formatVideo(video));
                 allVideos.push(...pageVideos);
                 console.log(`APIJAV page ${page}: ${pageVideos.length} videos (total: ${allVideos.length})`);
-                // Add delay between requests to avoid rate limiting
-                if (page < maxPages) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
                 // Stop if we got fewer results than expected (end of results)
                 if (pageVideos.length < perPage) {
                     console.log(`APIJAV: Reached end of results at page ${page}`);
@@ -82,7 +78,7 @@ class ApiJavService {
         try {
             console.log(`Fetching APIJAV video by ID: ${id}`);
             const response = await axios_1.default.get(`${this.baseUrl}/posts/${id}`, {
-                timeout: 15000,
+                timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
                     'X-Client-Site': 'https://localhost:3000'
@@ -107,7 +103,7 @@ class ApiJavService {
         try {
             console.log(`Fetching APIJAV player info for ID: ${id}`);
             const response = await axios_1.default.get(`${this.baseUrl}/player/${id}`, {
-                timeout: 15000,
+                timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
                     'X-Client-Site': 'https://localhost:3000'

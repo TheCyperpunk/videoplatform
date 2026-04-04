@@ -35,7 +35,7 @@ class EpornerService {
                 console.log(`Fetching Eporner videos page ${page} with params:`, params);
                 const response = await axios_1.default.get(`${this.baseUrl}/search/`, {
                     params,
-                    timeout: 15000,
+                    timeout: 30000, // Increased to 30s for reliability
                     headers: {
                         'Accept': 'application/json',
                         'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)'
@@ -79,7 +79,7 @@ class EpornerService {
                     thumbsize,
                     format: 'json'
                 },
-                timeout: 15000,
+                timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)'
@@ -107,7 +107,7 @@ class EpornerService {
                 params: {
                     format: 'json'
                 },
-                timeout: 15000,
+                timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)'

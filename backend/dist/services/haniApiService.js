@@ -101,7 +101,7 @@ class HaniApiService {
             const maxPages = 2; // Reduce to 2 pages since page 1+ often empty
             for (let p = 0; p < maxPages; p++) {
                 searchPromises.push(axios_1.default.post(`${this.baseUrl}/search`, { search: search.trim(), tags, brands, blacklist, order_by, ordering, page: p }, {
-                    timeout: 15000,
+                    timeout: 30000, // Increased to 30s for reliability
                     headers: {
                         'Content-Type': 'application/json',
                         'User-Agent': 'Mozilla/5.0 (compatible; VideoSearchBot/1.0)',

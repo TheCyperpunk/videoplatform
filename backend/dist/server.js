@@ -25,6 +25,20 @@ const PORT = parseInt(process.env.PORT || "5002");
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 // ── Register plugins ─────────────────────────────────────────────────────────
 async function registerPlugins() {
+    // Security headers plugin
+    await fastify.register(require('@fastify/helmet'), {
+        contentSecurityPolicy: false, // API, not HTML
+        crossOriginResourcePolicy: { policy: 'cross-origin' }
+    });
+    // Rate limiting plugin - prevent abuse and DoS
+    await fastify.register(require('@fastify/rate-limit'), {
+        max: 60, // 60 requests
+        timeWindow: '1 minute',
+        errorResponseBuilder: () => ({
+            success: false,
+            error: 'Too many requests, please slow down'
+        })
+    });
     // CORS plugin
     await fastify.register(require('@fastify/cors'), {
         origin: FRONTEND_URL,
@@ -60,9 +74,9 @@ fastify.get('/api/redtube/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('RedTube search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/redtube/trending', async (request, reply) => {
@@ -74,9 +88,9 @@ fastify.get('/api/redtube/trending', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('RedTube trending error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/redtube/newest', async (request, reply) => {
@@ -87,9 +101,9 @@ fastify.get('/api/redtube/newest', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('RedTube newest error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/redtube/top-rated', async (request, reply) => {
@@ -101,9 +115,9 @@ fastify.get('/api/redtube/top-rated', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('RedTube top-rated error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/redtube/tags/:tags', async (request, reply) => {
@@ -116,9 +130,9 @@ fastify.get('/api/redtube/tags/:tags', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('RedTube tags error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== APIJAV API ENDPOINTS =====
@@ -141,9 +155,9 @@ fastify.get('/api/apijav/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('APIJAV search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/apijav/video/:id', async (request, reply) => {
@@ -158,9 +172,9 @@ fastify.get('/api/apijav/video/:id', async (request, reply) => {
         return { success: true, data: video };
     }
     catch (error) {
-        console.error('APIJAV video error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/apijav/trending', async (request, reply) => {
@@ -171,9 +185,9 @@ fastify.get('/api/apijav/trending', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('APIJAV trending error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== EPORNER API ENDPOINTS =====
@@ -193,9 +207,9 @@ fastify.get('/api/eporner/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('Eporner search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== FAPHOUSE API ENDPOINTS =====
@@ -216,9 +230,9 @@ fastify.get('/api/faphouse/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('FapHouse search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== HANIAPI ENDPOINTS =====
@@ -238,9 +252,9 @@ fastify.get('/api/haniapi/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('HaniAPI search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/haniapi/newest', async (request, reply) => {
@@ -251,9 +265,9 @@ fastify.get('/api/haniapi/newest', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('HaniAPI newest error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/haniapi/trending', async (request, reply) => {
@@ -265,9 +279,9 @@ fastify.get('/api/haniapi/trending', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('HaniAPI trending error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/haniapi/video/:slug', async (request, reply) => {
@@ -282,9 +296,9 @@ fastify.get('/api/haniapi/video/:slug', async (request, reply) => {
         return { success: true, data: video };
     }
     catch (error) {
-        console.error('HaniAPI video error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== HENTAI OCEAN ENDPOINTS =====
@@ -300,9 +314,9 @@ fastify.get('/api/hentaiocean/search', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('Hentai Ocean search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/hentaiocean/latest', async (request, reply) => {
@@ -314,9 +328,9 @@ fastify.get('/api/hentaiocean/latest', async (request, reply) => {
         return { success: true, data: videos, count: videos.length };
     }
     catch (error) {
-        console.error('Hentai Ocean latest error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 fastify.get('/api/hentaiocean/video/:slug', async (request, reply) => {
@@ -331,9 +345,9 @@ fastify.get('/api/hentaiocean/video/:slug', async (request, reply) => {
         return { success: true, data: video };
     }
     catch (error) {
-        console.error('Hentai Ocean video error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== CATEGORY-SPECIFIC SEARCH ENDPOINT =====
@@ -346,7 +360,7 @@ fastify.get('/api/external/category/:category', async (request, reply) => {
         // Map category to sources
         let sources = [];
         if (category === 'jav' || category === 'javfetch') {
-            sources = ['apijav', 'redtube', 'eporner', 'faphouse'];
+            sources = ['apijav'];
         }
         else if (category === 'hentai') {
             sources = ['hentaiocean', 'haniapi'];
@@ -362,12 +376,6 @@ fastify.get('/api/external/category/:category', async (request, reply) => {
                 switch (source.toLowerCase()) {
                     case 'apijav':
                         return { source: 'apijav', data: await apijavService_1.default.searchVideos({ page, maxPages: 3 }) };
-                    case 'redtube':
-                        return { source: 'redtube', data: await redtubeService_1.default.searchVideos({ page }) };
-                    case 'eporner':
-                        return { source: 'eporner', data: await epornerService_1.default.searchVideos({ page }) };
-                    case 'faphouse':
-                        return { source: 'faphouse', data: await faphouseService_1.default.searchVideos({ page }) };
                     case 'haniapi':
                         return { source: 'haniapi', data: await haniApiService_1.default.getNewestVideos(page - 1) };
                     case 'hentaiocean':
@@ -377,7 +385,7 @@ fastify.get('/api/external/category/:category', async (request, reply) => {
                 }
             }
             catch (error) {
-                console.error(`Error fetching ${source}:`, error);
+                fastify.log.error(error);
                 return { source, data: [] };
             }
         });
@@ -398,9 +406,9 @@ fastify.get('/api/external/category/:category', async (request, reply) => {
         };
     }
     catch (error) {
-        console.error('Category search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ===== UNIFIED SEARCH ENDPOINT =====
@@ -436,7 +444,7 @@ fastify.get('/api/external/search', async (request, reply) => {
                 }
             }
             catch (error) {
-                console.error(`Error searching ${source}:`, error);
+                fastify.log.error(error);
                 return { source, data: [] };
             }
         });
@@ -457,9 +465,9 @@ fastify.get('/api/external/search', async (request, reply) => {
         };
     }
     catch (error) {
-        console.error('Unified search error:', error);
+        fastify.log.error(error);
         reply.code(500);
-        return { success: false, error: error.message };
+        return { success: false, error: 'Internal server error' };
     }
 });
 // ── Health check ───────────────────────────────────────────────────────

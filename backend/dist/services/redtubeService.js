@@ -39,7 +39,7 @@ class RedTubeService {
                 console.log(`Fetching RedTube videos page ${page} with params:`, params);
                 const response = await axios_1.default.get(this.baseUrl, {
                     params,
-                    timeout: 15000
+                    timeout: 30000 // Increased to 30s for reliability
                 });
                 if (!response.data || !response.data.videos) {
                     console.log(`No videos found in response for page ${page}`);
