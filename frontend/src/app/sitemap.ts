@@ -1,55 +1,94 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://videx.com";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://videx.com';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Static pages
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/explore`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/adult-series`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-  ];
+// This runs once to figure out how many XML files to chunk the database into
+export async function generateSitemaps() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/sitemap/count`, { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error("Failed to fetch sitemap count");
+    
+    const { totalPages } = await res.json();
+    
+    const sitemaps = [];
+    const pagesToGenerate = Math.max(1, totalPages || 1);
+    
+    for (let i = 0; i < pagesToGenerate; i++) {
+        sitemaps.push({ id: i });
+    }
+    return sitemaps;
+  } catch (error) {
+    console.error("Error generating sitemap index:", error);
+    return [{ id: 0 }]; // Always generate at least one sitemap
+  }
+}
 
-  // Category pages
-  const categories = [
-    { slug: "jav", name: "JAV" },
-    { slug: "hentai", name: "Hentai" },
-    { slug: "webseries", name: "Web Series" },
-    { slug: "technology", name: "Technology" },
-    { slug: "travel", name: "Travel" },
-    { slug: "food", name: "Food" },
-    { slug: "music", name: "Music" },
-    { slug: "fitness", name: "Fitness" },
-    { slug: "science", name: "Science" },
-    { slug: "business", name: "Business" },
-    { slug: "lifestyle", name: "Lifestyle" },
-    { slug: "history", name: "History" },
-    { slug: "gaming", name: "Gaming" },
-    { slug: "art", name: "Art" },
-    { slug: "sports", name: "Sports" },
-  ];
+// This runs for each ID to generate the actual XML contents for that chunk
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  const page = id; // API is 0-indexed
+  
+  let urls: MetadataRoute.Sitemap = [];
+  
+  try {
+    const res = await fetch(`${BASE_URL}/api/sitemap/videos/${page}`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+        const { data } = await res.json();
+        if (data && Array.isArray(data)) {
+            urls = data.map((video: any) => ({
+                url: `${FRONTEND_URL}/video/${video.id}`,
+                lastModified: video.updatedAt ? new Date(video.updatedAt) : new Date(),
+                changeFrequency: 'weekly', // Adult videos don't change often once posted
+                priority: 0.8,
+            }));
+        }
+    }
+  } catch (error) {
+    console.error(`Error fetching sitemap data for page ${page}:`, error);
+  }
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${baseUrl}/category/${cat.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "daily" as const,
-    priority: 0.7,
-  }));
+  // Inject vital static pages into the very first sitemap file (sitemap/0.xml)
+  if (id === 0) {
+    const staticPages: MetadataRoute.Sitemap = [
+      {
+        url: `${FRONTEND_URL}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1.0,
+      },
+      {
+        url: `${FRONTEND_URL}/explore`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.9,
+      },
+      {
+        url: `${FRONTEND_URL}/adult-series`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.8,
+      },
+      {
+        url: `${FRONTEND_URL}/category/jav`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.7,
+      },
+      {
+        url: `${FRONTEND_URL}/category/hentai`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.7,
+      },
+      {
+        url: `${FRONTEND_URL}/category/webseries`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.7,
+      }
+    ];
+    return [...staticPages, ...urls];
+  }
 
-  return [...staticPages, ...categoryPages];
+  return urls;
 }

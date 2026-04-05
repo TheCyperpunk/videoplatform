@@ -6,6 +6,7 @@ import connectDB from "./config/db";
 import videoRoutes from "./routes/videos";
 import searchRoutes from "./routes/search";
 import categoryRoutes from "./routes/categories";
+import sitemapRoutes from "./routes/sitemap";
 
 // Import API services
 import redtubeService from "./services/redtubeService";
@@ -68,6 +69,8 @@ async function registerRoutes() {
   await fastify.register(videoRoutes, { prefix: "/api/videos" });
   await fastify.register(searchRoutes, { prefix: "/api/search" });
   await fastify.register(categoryRoutes, { prefix: "/api/categories" });
+  // Sitemap route — lightweight endpoint for Googlebot only
+  await fastify.register(sitemapRoutes, { prefix: "/api/sitemap" });
 }
 
 // ── External API Routes ─────────────────────────────────────────────────────

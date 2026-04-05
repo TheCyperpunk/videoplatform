@@ -7,15 +7,15 @@ const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "https://videx.com";
  */
 export function generateExploreMetadata(): Metadata {
   return {
-    title: "Explore Videos | Videx – Stream. Discover. Explore.",
-    description: "Browse and discover videos on Videx. Filter by category, sort by trending, newest, or most popular. Find your next favorite video.",
-    keywords: ["explore videos", "video discovery", "browse videos", "trending videos", "video categories"],
+    title: "Explore Free Porn Videos | Desimallu",
+    description: "Browse and discover premium porn videos on Desimallu. Filter by category, sort by trending, newest, or most popular XXX content.",
+    keywords: ["explore porn", "porn video discovery", "browse XXX videos", "trending porn", "adult categories"],
     openGraph: {
-      title: "Explore Videos | Videx",
-      description: "Browse and discover videos on Videx. Filter by category, sort by trending, newest, or most popular.",
+      title: "Explore Free Porn Videos | Desimallu",
+      description: "Browse and discover premium porn videos on Desimallu. Filter by category, sort by trending, newest, or most popular XXX content.",
       type: "website",
       url: `${baseUrl}/explore`,
-      siteName: "Videx",
+      siteName: "Desimallu",
       locale: "en_US",
       images: [
         {
@@ -28,8 +28,8 @@ export function generateExploreMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Explore Videos | Videx",
-      description: "Browse and discover videos on Videx. Filter by category, sort by trending, newest, or most popular.",
+      title: "Explore Free Porn Videos | Desimallu",
+      description: "Browse and discover premium porn videos on Desimallu. Filter by category, sort by trending, newest, or most popular XXX content.",
       images: [`${baseUrl}/twitter-image.png`],
     },
     alternates: {
@@ -43,15 +43,15 @@ export function generateExploreMetadata(): Metadata {
  */
 export function generateAdultSeriesMetadata(): Metadata {
   return {
-    title: "Adult Web Series | Videx – Stream. Discover. Explore.",
-    description: "Discover adult web series on Videx. Browse the latest web series content, filter by quality, and explore trending shows.",
-    keywords: ["adult web series", "web series", "adult content", "streaming series"],
+    title: "Adult Web Series & XXX | Desimallu",
+    description: "Discover exclusive adult web series on Desimallu. Browse the latest explicit web series content, filter by quality, and explore trending 18+ shows.",
+    keywords: ["adult web series", "porn series", "XXX episodes", "streaming adult series", "18+ content"],
     openGraph: {
-      title: "Adult Web Series | Videx",
-      description: "Discover adult web series on Videx. Browse the latest web series content and explore trending shows.",
+      title: "Adult Web Series & XXX | Desimallu",
+      description: "Discover exclusive adult web series on Desimallu. Browse the latest explicit web series content and explore trending 18+ shows.",
       type: "website",
       url: `${baseUrl}/adult-series`,
-      siteName: "Videx",
+      siteName: "Desimallu",
       locale: "en_US",
       images: [
         {
@@ -64,8 +64,8 @@ export function generateAdultSeriesMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Adult Web Series | Videx",
-      description: "Discover adult web series on Videx. Browse the latest web series content and explore trending shows.",
+      title: "Adult Web Series & XXX | Desimallu",
+      description: "Discover exclusive adult web series on Desimallu. Browse the latest explicit web series content and explore trending 18+ shows.",
       images: [`${baseUrl}/twitter-image.png`],
     },
     alternates: {
@@ -79,19 +79,19 @@ export function generateAdultSeriesMetadata(): Metadata {
  */
 export function generateSearchMetadata(query: string, category?: string): Metadata {
   const categoryText = category ? ` in ${category}` : "";
-  const title = `${query} Videos${categoryText} | Videx`;
-  const description = `Search results for "${query}"${categoryText} on Videx. Discover videos, filter by quality, and explore more.`;
+  const title = `Free ${query} Porn Videos${categoryText} | Desimallu`;
+  const description = `Search results for "${query}"${categoryText} on Desimallu. Discover free porn videos, filter by quality, and explore HD XXX content.`;
 
   return {
     title,
     description,
-    keywords: [query, "videos", "search", category || ""].filter(Boolean),
+    keywords: [query, "porn videos", "search XXX", category || ""].filter(Boolean),
     openGraph: {
       title,
       description,
       type: "website",
       url: `${baseUrl}/explore?q=${encodeURIComponent(query)}${category ? `&category=${category}` : ""}`,
-      siteName: "Videx",
+      siteName: "Desimallu",
       locale: "en_US",
       images: [
         {
@@ -119,19 +119,19 @@ export function generateSearchMetadata(query: string, category?: string): Metada
  * Generate metadata for category pages
  */
 export function generateCategoryMetadata(categoryName: string, categorySlug: string): Metadata {
-  const title = `${categoryName} Videos | Videx`;
-  const description = `Browse ${categoryName} videos on Videx. Discover trending ${categoryName} content, filter by quality, and explore more.`;
+  const title = `${categoryName} Porn Videos | Desimallu`;
+  const description = `Browse free ${categoryName} porn videos on Desimallu. Discover trending ${categoryName} XXX content, filter by HD quality, and explore top adult videos.`;
 
   return {
     title,
     description,
-    keywords: [categoryName, "videos", "category", categorySlug],
+    keywords: [categoryName, "porn videos", "XXX category", categorySlug, "adult streaming"],
     openGraph: {
       title,
       description,
       type: "website",
       url: `${baseUrl}/category/${categorySlug}`,
-      siteName: "Videx",
+      siteName: "Desimallu",
       locale: "en_US",
       images: [
         {
@@ -166,19 +166,19 @@ export function generateVideoMetadata(video: {
   views?: number;
   duration?: string;
 }): Metadata {
-  const title = `${video.title} | Videx`;
-  const description = video.description || `Watch ${video.title} on Videx. ${video.views ? `${video.views} views.` : ""}`;
+  const title = `${video.title} - Free Porn Video | Desimallu`;
+  const description = video.description || `Watch free XXX video ${video.title} on Desimallu. ${video.views ? `${video.views} views.` : ""}`;
 
   return {
     title,
     description,
-    keywords: [video.title, "video", "watch", video.channel?.name || ""].filter(Boolean),
+    keywords: [video.title, "porn video", "watch free XXX", video.channel?.name || ""].filter(Boolean),
     openGraph: {
       title: video.title,
       description,
       type: "video.other",
       url: `${baseUrl}/video/${video.id}`,
-      siteName: "Videx",
+      siteName: "Desimallu",
       locale: "en_US",
       images: [
         {
