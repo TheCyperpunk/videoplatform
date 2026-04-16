@@ -304,8 +304,8 @@ class FapHouseService {
                         category: 'General',
                         category_slug: 'general',
                         is_premium: isPremium,
-                        views: Math.floor(Math.random() * 1000000) + 1000,
-                        rating: (Math.random() * 2 + 3).toFixed(1),
+                        views: null, // CRIT-4 fix: never fabricate view counts
+                        rating: null, // CRIT-4 fix: never fabricate ratings
                         added_date: new Date().toISOString(),
                         description: `${quality} video: ${title}`,
                         tags: [quality.toLowerCase(), studio.toLowerCase()].filter(Boolean)

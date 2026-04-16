@@ -11,7 +11,7 @@ async function videoRoutes(fastify) {
         try {
             const query = request.query;
             const page = Math.max(1, parseInt(query.page) || 1);
-            const limit = Math.min(200, Math.max(1, parseInt(query.limit) || 120));
+            const limit = Math.min(50, Math.max(1, parseInt(query.limit) || 48));
             const category = query.category || "";
             const sort = query.sort || "date";
             const quality = query.quality || "";
@@ -69,8 +69,9 @@ async function videoRoutes(fastify) {
             };
         }
         catch (err) {
+            fastify.log.error(err);
             reply.code(500);
-            return { data: [], total: 0, page: 1, limit: 120, hasMore: false, error: String(err) };
+            return { data: [], total: 0, page: 1, limit: 48, hasMore: false, error: 'Internal server error' };
         }
     });
     // ── GET /api/videos/trending ───────────────────────────────────────────
@@ -84,7 +85,7 @@ async function videoRoutes(fastify) {
         }
         catch (err) {
             reply.code(500);
-            return { data: [], error: String(err) };
+            return { data: [], error: 'Internal server error' };
         }
     });
     // ── GET /api/videos/new ─────────────────────────────────────────────────
@@ -93,7 +94,7 @@ async function videoRoutes(fastify) {
         try {
             const query = request.query;
             const page = Math.max(1, parseInt(query.page) || 1);
-            const limit = Math.min(200, Math.max(1, parseInt(query.limit) || 20));
+            const limit = Math.min(50, Math.max(1, parseInt(query.limit) || 20));
             const total = await Video_1.default.countDocuments({});
             const data = await Video_1.default.find({}, {
                 _id: 1, id: 1, title: 1, thumbnail: 1, duration: 1, views: 1,
@@ -115,7 +116,7 @@ async function videoRoutes(fastify) {
         }
         catch (err) {
             reply.code(500);
-            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: String(err) };
+            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: 'Internal server error' };
         }
     });
     // ── GET /api/videos/popular ─────────────────────────────────────────────
@@ -124,7 +125,7 @@ async function videoRoutes(fastify) {
         try {
             const query = request.query;
             const page = Math.max(1, parseInt(query.page) || 1);
-            const limit = Math.min(200, Math.max(1, parseInt(query.limit) || 20));
+            const limit = Math.min(50, Math.max(1, parseInt(query.limit) || 20));
             // Since most videos have views: 0, use a different popularity algorithm
             // Sort by: views desc (for the few with views), then publishedAt desc, then createdAt desc
             const total = await Video_1.default.countDocuments({});
@@ -148,7 +149,7 @@ async function videoRoutes(fastify) {
         }
         catch (err) {
             reply.code(500);
-            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: String(err) };
+            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: 'Internal server error' };
         }
     });
     // ── GET /api/videos/top-rated ───────────────────────────────────────────
@@ -157,7 +158,7 @@ async function videoRoutes(fastify) {
         try {
             const query = request.query;
             const page = Math.max(1, parseInt(query.page) || 1);
-            const limit = Math.min(200, Math.max(1, parseInt(query.limit) || 20));
+            const limit = Math.min(50, Math.max(1, parseInt(query.limit) || 20));
             const filter = { likes: { $gt: 0 } };
             const total = await Video_1.default.countDocuments(filter);
             const data = await Video_1.default.find(filter, {
@@ -180,14 +181,21 @@ async function videoRoutes(fastify) {
         }
         catch (err) {
             reply.code(500);
-            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: String(err) };
+            return { data: [], total: 0, page: 1, limit: 20, hasMore: false, error: 'Internal server error' };
         }
     });
     // ── GET /api/videos/:id ────────────────────────────────────────────────
     fastify.get("/:id", async (request, reply) => {
         try {
             const params = request.params;
-            const video = await Video_1.default.findOne({ id: params.id }).lean();
+            // CRIT-3 fix: sanitize and validate ID before touching MongoDB
+            const rawId = String(params.id || '').trim();
+            const id = rawId.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 150);
+            if (!id || id.length < 1) {
+                reply.code(400);
+                return { data: null, error: 'Invalid video id' };
+            }
+            const video = await Video_1.default.findOne({ id }).lean();
             if (!video) {
                 reply.code(404);
                 return { data: null, error: "Video not found" };
@@ -203,8 +211,9 @@ async function videoRoutes(fastify) {
             return { data: { video, related }, error: null };
         }
         catch (err) {
+            fastify.log.error(err);
             reply.code(500);
-            return { data: null, error: String(err) };
+            return { data: null, error: 'Internal server error' };
         }
     });
 }

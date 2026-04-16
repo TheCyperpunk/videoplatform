@@ -19,9 +19,17 @@ export function AgeVerificationModal() {
             return;
         }
 
-        // Always show the age verification modal
-        setIsOpen(true);
-        document.body.style.overflow = "hidden";
+        // Check verification status using sessionStorage (clears on tab close)
+        let verified = false;
+        try {
+            verified = sessionStorage.getItem("videx_age_verified") === "true";
+        } catch (e) {
+            // If sessionStorage fails, don't show modal
+            verified = true;
+        }
+
+        setIsOpen(!verified);
+        document.body.style.overflow = verified ? "auto" : "hidden";
 
         // Cleanup
         return () => {
@@ -30,6 +38,12 @@ export function AgeVerificationModal() {
     }, [pathname]);
 
     const handleAccept = () => {
+        try {
+            // Use sessionStorage instead of localStorage - clears when tab/browser closes
+            sessionStorage.setItem("videx_age_verified", "true");
+        } catch (e) {
+            console.error("Failed to save verification:", e);
+        }
         setIsOpen(false);
         document.body.style.overflow = "auto";
     };

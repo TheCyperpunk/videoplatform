@@ -10,6 +10,7 @@ const db_1 = __importDefault(require("./config/db"));
 const videos_1 = __importDefault(require("./routes/videos"));
 const search_1 = __importDefault(require("./routes/search"));
 const categories_1 = __importDefault(require("./routes/categories"));
+const sitemap_1 = __importDefault(require("./routes/sitemap"));
 // Import API services
 const redtubeService_1 = __importDefault(require("./services/redtubeService"));
 const apijavService_1 = __importDefault(require("./services/apijavService"));
@@ -39,9 +40,21 @@ async function registerPlugins() {
             error: 'Too many requests, please slow down'
         })
     });
-    // CORS plugin
+    // CORS plugin - allow multiple origins for development and production
     await fastify.register(require('@fastify/cors'), {
-        origin: FRONTEND_URL,
+        origin: (origin, cb) => {
+            const allowedOrigins = new Set([
+                FRONTEND_URL,
+                'http://localhost:3000'
+            ]);
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin || allowedOrigins.has(origin)) {
+                cb(null, true);
+                return;
+            }
+            // Reject other origins
+            cb(new Error('Not allowed by CORS'), false);
+        },
         credentials: true
     });
     // Compression plugin for faster responses
@@ -56,8 +69,12 @@ async function registerRoutes() {
     await fastify.register(videos_1.default, { prefix: "/api/videos" });
     await fastify.register(search_1.default, { prefix: "/api/search" });
     await fastify.register(categories_1.default, { prefix: "/api/categories" });
+    // Sitemap route — lightweight endpoint for Googlebot only
+    await fastify.register(sitemap_1.default, { prefix: "/api/sitemap" });
 }
 // ── External API Routes ─────────────────────────────────────────────────────
+// Whitelist of valid external sources — prevents DoS amplification via Promise.all
+const VALID_SOURCES = new Set(['redtube', 'apijav', 'eporner', 'faphouse', 'haniapi', 'hentaiocean']);
 // ===== REDTUBE API ENDPOINTS =====
 fastify.get('/api/redtube/search', async (request, reply) => {
     try {
@@ -351,7 +368,14 @@ fastify.get('/api/hentaiocean/video/:slug', async (request, reply) => {
     }
 });
 // ===== CATEGORY-SPECIFIC SEARCH ENDPOINT =====
-fastify.get('/api/external/category/:category', async (request, reply) => {
+fastify.get('/api/external/category/:category', {
+    config: {
+        rateLimit: {
+            max: 10,
+            timeWindow: '1 minute'
+        }
+    }
+}, async (request, reply) => {
     try {
         const params = request.params;
         const query = request.query;
@@ -412,15 +436,30 @@ fastify.get('/api/external/category/:category', async (request, reply) => {
     }
 });
 // ===== UNIFIED SEARCH ENDPOINT =====
-fastify.get('/api/external/search', async (request, reply) => {
+fastify.get('/api/external/search', {
+    config: {
+        rateLimit: {
+            max: 10,
+            timeWindow: '1 minute'
+        }
+    }
+}, async (request, reply) => {
     try {
         const query = request.query;
-        const searchQuery = query.query;
-        const page = query.page ? parseInt(query.page) : 1;
-        const sources = query.sources ? query.sources.split(',') : ['redtube', 'apijav', 'eporner', 'faphouse', 'haniapi', 'hentaiocean'];
+        const searchQuery = (query.query || '').trim().slice(0, 200);
+        const page = Math.max(1, Math.min(100, query.page ? parseInt(query.page) : 1));
+        // Whitelist sources — cap at 6, reject unknown values to prevent DoS amplification
+        const rawSources = query.sources
+            ? query.sources.split(',').slice(0, 6)
+            : [...VALID_SOURCES];
+        const sources = rawSources.filter(s => VALID_SOURCES.has(s.trim()));
         if (!searchQuery) {
             reply.code(400);
             return { success: false, error: 'Query parameter is required' };
+        }
+        if (sources.length === 0) {
+            reply.code(400);
+            return { success: false, error: 'No valid sources provided' };
         }
         const results = {};
         // Search all requested sources in parallel

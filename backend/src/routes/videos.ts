@@ -8,7 +8,7 @@ async function videoRoutes(fastify: FastifyInstance) {
         try {
             const query = request.query as any;
             const page = Math.max(1, parseInt(query.page as string) || 1);
-            const limit = Math.min(50, Math.max(1, parseInt(query.limit as string) || 48));
+            const limit = Math.min(120, Math.max(1, parseInt(query.limit as string) || 48));
             const category = (query.category as string) || "";
             const sort = (query.sort as string) || "date";
             const quality = (query.quality as string) || "";
@@ -94,7 +94,7 @@ async function videoRoutes(fastify: FastifyInstance) {
         try {
             const query = request.query as any;
             const page = Math.max(1, parseInt(query.page as string) || 1);
-            const limit = Math.min(50, Math.max(1, parseInt(query.limit as string) || 20));
+            const limit = Math.min(120, Math.max(1, parseInt(query.limit as string) || 20));
 
             const total = await Video.countDocuments({});
             const data = await Video.find({}, {
@@ -127,7 +127,7 @@ async function videoRoutes(fastify: FastifyInstance) {
         try {
             const query = request.query as any;
             const page = Math.max(1, parseInt(query.page as string) || 1);
-            const limit = Math.min(50, Math.max(1, parseInt(query.limit as string) || 20));
+            const limit = Math.min(120, Math.max(1, parseInt(query.limit as string) || 20));
 
             // Since most videos have views: 0, use a different popularity algorithm
             // Sort by: views desc (for the few with views), then publishedAt desc, then createdAt desc
@@ -162,7 +162,7 @@ async function videoRoutes(fastify: FastifyInstance) {
         try {
             const query = request.query as any;
             const page = Math.max(1, parseInt(query.page as string) || 1);
-            const limit = Math.min(50, Math.max(1, parseInt(query.limit as string) || 20));
+            const limit = Math.min(120, Math.max(1, parseInt(query.limit as string) || 20));
 
             const filter = { likes: { $gt: 0 } };
             

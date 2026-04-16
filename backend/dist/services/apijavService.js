@@ -46,7 +46,7 @@ class ApiJavService {
                     timeout: 30000, // Increased to 30s for reliability
                     headers: {
                         'Accept': 'application/json',
-                        'X-Client-Site': 'https://localhost:3000' // Optional client identification
+                        'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
                     }
                 });
                 if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
@@ -81,7 +81,7 @@ class ApiJavService {
                 timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
-                    'X-Client-Site': 'https://localhost:3000'
+                    'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
                 }
             });
             if (!response.data) {
@@ -106,7 +106,7 @@ class ApiJavService {
                 timeout: 30000, // Increased to 30s for reliability
                 headers: {
                     'Accept': 'application/json',
-                    'X-Client-Site': 'https://localhost:3000'
+                    'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
                 }
             });
             return response.data;

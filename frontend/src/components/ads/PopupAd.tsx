@@ -39,21 +39,21 @@ export function PopupAd() {
             return;
         }
 
-        // Show popup every 4 minutes
+        // Show popup every 2 minutes
         const interval = setInterval(() => {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd()); // fresh random ad each time
                 setIsVisible(true);
             }
-        }, 240000); // 4 minutes
+        }, 120000); // 2 minutes
 
-        // Show first popup after 4 minutes
+        // Show first popup after 2 minutes
         const initialTimeout = setTimeout(() => {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd());
                 setIsVisible(true);
             }
-        }, 240000);
+        }, 120000);
 
         return () => {
             clearInterval(interval);
