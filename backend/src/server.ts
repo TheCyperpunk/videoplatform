@@ -50,9 +50,23 @@ async function registerPlugins() {
     })
   });
 
-  // CORS plugin
+  // CORS plugin - allow multiple origins for development and production
   await fastify.register(require('@fastify/cors'), {
-    origin: FRONTEND_URL,
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
+      const allowedOrigins = new Set([
+        FRONTEND_URL,
+        'http://localhost:3000'
+      ]);
+
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.has(origin)) {
+        cb(null, true);
+        return;
+      }
+      
+      // Reject other origins
+      cb(new Error('Not allowed by CORS'), false);
+    },
     credentials: true
   });
 
@@ -74,6 +88,10 @@ async function registerRoutes() {
 }
 
 // ── External API Routes ─────────────────────────────────────────────────────
+
+// Whitelist of valid external sources — prevents DoS amplification via Promise.all
+const VALID_SOURCES = new Set(['redtube', 'apijav', 'eporner', 'faphouse', 'haniapi', 'hentaiocean']);
+
 
 // ===== REDTUBE API ENDPOINTS =====
 fastify.get('/api/redtube/search', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -388,7 +406,14 @@ fastify.get('/api/hentaiocean/video/:slug', async (request: FastifyRequest, repl
 });
 
 // ===== CATEGORY-SPECIFIC SEARCH ENDPOINT =====
-fastify.get('/api/external/category/:category', async (request: FastifyRequest, reply: FastifyReply) => {
+fastify.get('/api/external/category/:category', {
+    config: {
+        rateLimit: {
+            max: 10,
+            timeWindow: '1 minute'
+        }
+    }
+}, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const params = request.params as any;
         const query = request.query as any;
@@ -453,16 +478,32 @@ fastify.get('/api/external/category/:category', async (request: FastifyRequest, 
 });
 
 // ===== UNIFIED SEARCH ENDPOINT =====
-fastify.get('/api/external/search', async (request: FastifyRequest, reply: FastifyReply) => {
+fastify.get('/api/external/search', {
+    config: {
+        rateLimit: {
+            max: 10,
+            timeWindow: '1 minute'
+        }
+    }
+}, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const query = request.query as any;
-        const searchQuery = query.query as string;
-        const page = query.page ? parseInt(query.page as string) : 1;
-        const sources = query.sources ? (query.sources as string).split(',') : ['redtube', 'apijav', 'eporner', 'faphouse', 'haniapi', 'hentaiocean'];
+        const searchQuery = ((query.query as string) || '').trim().slice(0, 200);
+        const page = Math.max(1, Math.min(100, query.page ? parseInt(query.page as string) : 1));
+
+        // Whitelist sources — cap at 6, reject unknown values to prevent DoS amplification
+        const rawSources = query.sources
+            ? (query.sources as string).split(',').slice(0, 6)
+            : [...VALID_SOURCES];
+        const sources = rawSources.filter(s => VALID_SOURCES.has(s.trim()));
 
         if (!searchQuery) {
             reply.code(400);
             return { success: false, error: 'Query parameter is required' };
+        }
+        if (sources.length === 0) {
+            reply.code(400);
+            return { success: false, error: 'No valid sources provided' };
         }
 
         const results: any = {};

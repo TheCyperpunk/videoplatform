@@ -35,7 +35,9 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-# Data imports
+# Data imports & raw data
 *.csv
 normalized_*.json
+*.videos.json
+assoass.json
 

@@ -51,7 +51,7 @@ class ApiJavService {
           timeout: 30000, // Increased to 30s for reliability
           headers: {
             'Accept': 'application/json',
-            'X-Client-Site': 'https://localhost:3000' // Optional client identification
+            'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
           }
         });
 
@@ -92,7 +92,7 @@ class ApiJavService {
         timeout: 30000, // Increased to 30s for reliability
         headers: {
           'Accept': 'application/json',
-          'X-Client-Site': 'https://localhost:3000'
+          'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
         }
       });
 
@@ -120,7 +120,7 @@ class ApiJavService {
         timeout: 30000, // Increased to 30s for reliability
         headers: {
           'Accept': 'application/json',
-          'X-Client-Site': 'https://localhost:3000'
+          'X-Client-Site': process.env.FRONTEND_URL || 'https://videx.com'
         }
       });
 

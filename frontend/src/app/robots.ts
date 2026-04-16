@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/.next/", "/node_modules/", "/_next/", "/private/"],
+        disallow: ["/api/", "/.next/", "/node_modules/", "/_next/", "/private/", "/test-api/"],
         crawlDelay: 1,
       },
       {

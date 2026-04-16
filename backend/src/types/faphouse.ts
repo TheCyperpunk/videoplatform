@@ -32,8 +32,8 @@ export interface FapHouseVideo {
   category?: string;
   category_slug?: string;
   is_premium: boolean;
-  views?: number;
-  rating?: string;
+  views?: number | null;   // null when data is unavailable (never fabricated)
+  rating?: string | null;  // null when data is unavailable (never fabricated)
   added_date?: string;
   description?: string;
   tags?: string[];
@@ -62,8 +62,8 @@ export interface FapHouseVideoData {
   studio: string;
   category: string;
   isPremium: boolean;
-  views?: number;
-  rating?: string;
+  views?: number | null;   // null when data is unavailable
+  rating?: string | null;  // null when data is unavailable
 }
 
 // Scraper response interfaces (simulated)

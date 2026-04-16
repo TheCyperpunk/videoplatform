@@ -23,6 +23,8 @@ const ResponsiveAd = ({
       <iframe
         width={width}
         height={height}
+        sandbox="allow-scripts allow-same-origin allow-popups"
+        referrerPolicy="no-referrer"
         style={{
           position: 'absolute',
           top: 0,

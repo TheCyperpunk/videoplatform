@@ -26,7 +26,6 @@ const AD_URLS = [
 
 export function PopupAd() {
     const [isVisible, setIsVisible] = useState(false);
-    const [closeAttempts, setCloseAttempts] = useState(0);
     const [currentAd, setCurrentAd] = useState(getRandomSquareAd);
     const pathname = usePathname();
 
@@ -45,7 +44,6 @@ export function PopupAd() {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd()); // fresh random ad each time
                 setIsVisible(true);
-                setCloseAttempts(0); // Reset close attempts for new popup
             }
         }, 240000); // 4 minutes
 
@@ -54,7 +52,6 @@ export function PopupAd() {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd());
                 setIsVisible(true);
-                setCloseAttempts(0);
             }
         }, 240000);
 
@@ -64,18 +61,10 @@ export function PopupAd() {
         };
     }, [pathname]);
 
+    // CRIT-5 fix: close button now closes the popup immediately.
+    // The ad iframe itself remains clickable for users who want to interact.
     const handleClose = () => {
-        if (closeAttempts === 0) {
-            // First close attempt - redirect to random ad
-            const randomIndex = Math.floor(Math.random() * AD_URLS.length);
-            const adUrl = AD_URLS[randomIndex];
-            window.open(adUrl, '_blank');
-            setCloseAttempts(1);
-        } else {
-            // Second close attempt - actually close the popup
-            setIsVisible(false);
-            setCloseAttempts(0);
-        }
+        setIsVisible(false);
     };
 
     if (!isVisible) return null;
@@ -109,6 +98,8 @@ export function PopupAd() {
                         title="Ad"
                         width={currentAd.w}
                         height={currentAd.h}
+                        sandbox="allow-scripts allow-same-origin allow-popups"
+                        referrerPolicy="no-referrer"
                         scrolling="no"
                         frameBorder={0}
                         marginHeight={0}

@@ -16,8 +16,9 @@ async function sitemapRoutes(fastify: FastifyInstance) {
             reply.header("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
             return { total, totalPages, pageSize: SITEMAP_PAGE_SIZE };
         } catch (err) {
+            fastify.log.error(err);
             reply.code(500);
-            return { error: String(err) };
+            return { error: 'Internal server error' };
         }
     });
 
@@ -44,8 +45,9 @@ async function sitemapRoutes(fastify: FastifyInstance) {
             reply.header("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
             return { data, page, count: data.length };
         } catch (err) {
+            fastify.log.error(err);
             reply.code(500);
-            return { data: [], error: String(err) };
+            return { data: [], error: 'Internal server error' };
         }
     });
 }
