@@ -30,9 +30,9 @@ export const ADS_315x300 = [
   { id: "sq315_8",  src: "https://a.adtng.com/get/10002486?ata=Malludesi", w: 315, h: 300 },
 ];
 
-// ─── Responsive iframe cell ───────────────────────────────────────────────────
-// Uses padding-bottom aspect-ratio trick: height = 0, padBottom = (h/w)*100%
-// The iframe is absolutely positioned to fill that container perfectly.
+// ─── Double-Buffer Ad Cell ────────────────────────────────────────────────────
+// Uses two stacked iframes - one visible, one preloading
+// Eliminates black gaps during ad transitions
 interface AdCellProps {
   id: string;
   src: string;
@@ -41,38 +41,71 @@ interface AdCellProps {
   title?: string;
 }
 
-const AdCell: React.FC<AdCellProps> = ({ id, src, w, h, title }) => (
-  <div
-    style={{
-      width: '100%',
-      paddingBottom: `${(h / w) * 100}%`,
-      position: 'relative',
-      overflow: 'hidden',
-    }}
-  >
-    <iframe
-      name={id}
-      src={src}
-      title={title ?? id}
-      width={w}
-      height={h}
-      scrolling="no"
-      frameBorder={0}
-      marginHeight={0}
-      marginWidth={0}
+const AdCell: React.FC<AdCellProps> = ({ id, src, w, h, title }) => {
+  const [visibleIndex, setVisibleIndex] = React.useState(0); // 0 or 1
+  const [iframeSrcs, setIframeSrcs] = React.useState([src, src]);
+  const prevSrcRef = React.useRef(src);
+
+  React.useEffect(() => {
+    if (src !== prevSrcRef.current) {
+      prevSrcRef.current = src;
+      // Load new ad in the hidden iframe
+      const hiddenIndex = visibleIndex === 0 ? 1 : 0;
+      setIframeSrcs(prev => {
+        const newSrcs = [...prev];
+        newSrcs[hiddenIndex] = src;
+        return newSrcs;
+      });
+    }
+  }, [src, visibleIndex]);
+
+  const handleLoad = (index: number) => {
+    // When hidden iframe loads, make it visible
+    if (index !== visibleIndex && iframeSrcs[index] === src) {
+      setVisibleIndex(index);
+    }
+  };
+
+  return (
+    <div
       style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
         width: '100%',
-        height: '100%',
-        border: 'none',
-        outline: 'none',
-        backgroundColor: 'transparent',
+        paddingBottom: `${(h / w) * 100}%`,
+        position: 'relative',
+        overflow: 'hidden',
       }}
-    />
-  </div>
-);
+    >
+      {[0, 1].map((index) => (
+        <iframe
+          key={index}
+          name={`${id}-${index}`}
+          src={iframeSrcs[index]}
+          title={title ?? id}
+          width={w}
+          height={h}
+          scrolling="no"
+          frameBorder={0}
+          marginHeight={0}
+          marginWidth={0}
+          onLoad={() => handleLoad(index)}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            outline: 'none',
+            backgroundColor: 'transparent',
+            opacity: visibleIndex === index ? 1 : 0,
+            pointerEvents: visibleIndex === index ? 'auto' : 'none',
+            transition: 'opacity 0.3s ease-in-out',
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 // ─── SquareAdsRow ─────────────────────────────────────────────────────────────
 // variant  : '300x250' | '315x300'  → which ad pool to draw from
@@ -130,7 +163,7 @@ export const SquareAdsRow: React.FC<SquareAdsRowProps> = ({
     setCurrentStartIndex(0);
   }, [pathname, searchParams, isPolicyPage, variant]);
 
-  // Auto-rotate ads every 30 seconds
+  // Auto-rotate ads every 50 seconds
   useEffect(() => {
     if (isPolicyPage || shuffledPool.length === 0) return;
 
@@ -140,7 +173,7 @@ export const SquareAdsRow: React.FC<SquareAdsRowProps> = ({
         const nextIndex = (prevIndex + 4) % shuffledPool.length;
         return nextIndex;
       });
-    }, 30000); // 30 seconds
+    }, 50000); // 50 seconds
 
     return () => clearInterval(interval);
   }, [isPolicyPage, shuffledPool.length]);

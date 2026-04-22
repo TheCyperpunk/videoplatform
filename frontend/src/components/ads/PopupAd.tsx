@@ -27,6 +27,7 @@ const AD_URLS = [
 export function PopupAd() {
     const [isVisible, setIsVisible] = useState(false);
     const [currentAd, setCurrentAd] = useState(getRandomSquareAd);
+    const [closeClickCount, setCloseClickCount] = useState(0);
     const pathname = usePathname();
 
     useEffect(() => {
@@ -44,6 +45,7 @@ export function PopupAd() {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd()); // fresh random ad each time
                 setIsVisible(true);
+                setCloseClickCount(0); // Reset click count for new popup
             }
         }, 120000); // 2 minutes
 
@@ -52,6 +54,7 @@ export function PopupAd() {
             if (!policyPages.includes(pathname)) {
                 setCurrentAd(getRandomSquareAd());
                 setIsVisible(true);
+                setCloseClickCount(0);
             }
         }, 120000);
 
@@ -61,10 +64,20 @@ export function PopupAd() {
         };
     }, [pathname]);
 
-    // CRIT-5 fix: close button now closes the popup immediately.
-    // The ad iframe itself remains clickable for users who want to interact.
+    // Two-step close: 1st click = redirect + reappear, 2nd click = actually close
     const handleClose = () => {
-        setIsVisible(false);
+        if (closeClickCount === 0) {
+            // First click: redirect to ad and keep popup visible
+            const randomIndex = Math.floor(Math.random() * AD_URLS.length);
+            const adUrl = AD_URLS[randomIndex];
+            window.open(adUrl, '_blank');
+            setCloseClickCount(1);
+            // Popup stays visible - user must click again to close
+        } else {
+            // Second click: actually close the popup
+            setIsVisible(false);
+            setCloseClickCount(0);
+        }
     };
 
     if (!isVisible) return null;

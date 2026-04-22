@@ -3,13 +3,40 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-// ─── Responsive Scaled Ad ────────────────────────────────────────────────────
-// Scales a fixed-width iframe to fill its container on any screen size
+// ─── Double-Buffer Ad Component ──────────────────────────────────────────────
+// Uses two stacked iframes - one visible, one preloading
+// Eliminates black gaps during ad transitions
 const ResponsiveAd = ({
   width,
   height,
-  ...rest
-}: React.IframeHTMLAttributes<HTMLIFrameElement> & { width: number; height: number }) => {
+  name,
+  src,
+  title,
+}: { width: number; height: number; name: string; src: string; title?: string }) => {
+  const [visibleIndex, setVisibleIndex] = React.useState(0); // 0 or 1
+  const [iframeSrcs, setIframeSrcs] = React.useState([src, src]);
+  const prevSrcRef = React.useRef(src);
+
+  React.useEffect(() => {
+    if (src !== prevSrcRef.current) {
+      prevSrcRef.current = src;
+      // Load new ad in the hidden iframe
+      const hiddenIndex = visibleIndex === 0 ? 1 : 0;
+      setIframeSrcs(prev => {
+        const newSrcs = [...prev];
+        newSrcs[hiddenIndex] = src;
+        return newSrcs;
+      });
+    }
+  }, [src, visibleIndex]);
+
+  const handleLoad = (index: number) => {
+    // When hidden iframe loads, make it visible
+    if (index !== visibleIndex && iframeSrcs[index] === src) {
+      setVisibleIndex(index);
+    }
+  };
+
   return (
     <div
       style={{
@@ -20,24 +47,32 @@ const ResponsiveAd = ({
         overflow: 'hidden',
       }}
     >
-      <iframe
-        width={width}
-        height={height}
-        sandbox="allow-scripts allow-same-origin allow-popups"
-        referrerPolicy="no-referrer"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          outline: 'none',
-          backgroundColor: 'transparent',
-          transform: 'none',
-        }}
-        {...rest}
-      />
+      {[0, 1].map((index) => (
+        <iframe
+          key={index}
+          name={`${name}-${index}`}
+          src={iframeSrcs[index]}
+          title={title}
+          width={width}
+          height={height}
+          sandbox="allow-scripts allow-same-origin allow-popups"
+          referrerPolicy="no-referrer"
+          onLoad={() => handleLoad(index)}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            outline: 'none',
+            backgroundColor: 'transparent',
+            opacity: visibleIndex === index ? 1 : 0,
+            pointerEvents: visibleIndex === index ? 'auto' : 'none',
+            transition: 'opacity 0.3s ease-in-out',
+          }}
+        />
+      ))}
     </div>
   );
 };
@@ -107,7 +142,7 @@ export const RotatingLeaderboard: React.FC<RotatingLeaderboardProps> = ({
   useEffect(() => {
     if (isPolicyPage || shuffledAds.length === 0) return;
 
-    const rotationTime = 30000; // 30s for all ad positions
+    const rotationTime = 50000; // 50s for all ad positions
     const increment = position === 'slim' ? 1 : 2; // 1 ad for slim, 2 ads for leaderboard
 
     const interval = setInterval(() => {
